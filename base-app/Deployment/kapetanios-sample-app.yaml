@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kapetanios-sample-app
+  labels:
+    app: kapetanios-sample-app
+spec:
+  selector:
+    matchLabels:
+      app: kapetanios-sample-app
+  template:
+    metadata:
+      labels:
+        app: kapetanios-sample-app
+    spec:
+      containers:
+      - name: kapetanios-sample-app
+        image: francomoreno/kapetanios-sample-app:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
