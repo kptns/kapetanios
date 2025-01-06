@@ -2,3 +2,14 @@ app:
     datadogConfig: 
         apiKey: 5bb1b4ba6f51ba73cf9c3bede5088bc2
         applicationKey: 8431c01cc28d50ac6b031a8153b57cea23e17f37
+
+
+management:
+  datadog:
+    metrics:
+      export:
+        enabled: true
+        api-key: YOUR_DATADOG_API_KEY
+        application-key: YOUR_DATADOG_APPLICATION_KEY
+        host-tag: YOUR_HOST_TAG # Opcional, para etiquetar el host
+        step: 1m               # Intervalo de envío (default: 1 minuto)
