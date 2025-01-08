@@ -227,7 +227,7 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                     foregroundColor: Colors.white,
                                     iconColor: Colors.white,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8), // <-- Radius
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
                                   onPressed: () {
@@ -245,7 +245,7 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                     foregroundColor: Colors.white,
                                     iconColor: Colors.white,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8), // <-- Radius
+                                      borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
                                   onPressed: () {
