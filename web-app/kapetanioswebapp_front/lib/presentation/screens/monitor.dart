@@ -71,8 +71,8 @@ class _MonitorState extends State<Monitor> {
             ),
             Row(
               children: [
-                Expanded(child: LineChart(titulo: 'RAM',)),
-                Expanded(child: LineChart(titulo: 'RAM',)),
+                Expanded(child: LineChart(titulo: 'Replicas disponibles y no disponibles',)),
+                Expanded(child: LineChart(titulo: 'Replicas actualizadas y vencidas',)),
               ],
             )
           ],
@@ -99,11 +99,11 @@ class _MonitorState extends State<Monitor> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(titulo.toUpperCase(), style: TextStyle(
-            fontSize: 20,
+            fontSize: 16,
             fontWeight: FontWeight.w600
           ),),
           Text(texto, style: TextStyle(
-            fontSize: 16
+            fontSize: 15
           ),)
         ],
       ),

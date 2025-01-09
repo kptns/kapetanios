@@ -57,48 +57,70 @@ class _LineChartState extends State<LineChart> {
   @override
   Widget build(BuildContext context) {
     _LiveLineChartState();
-    return Card(
-        elevation: 10,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SfCartesianChart(
-              title: ChartTitle(
-                text: widget.titulo,
-                alignment: ChartAlignment.center,
-                textStyle: TextStyle(
-                  fontSize: 20
-                )
+    return Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(widget.titulo, style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600
+              ),),
+              Divider(
+                color: Colors.grey.withAlpha(100),
+                thickness: .5,
               ),
-              plotAreaBorderWidth: 0,
-              primaryXAxis: const NumericAxis(
-                majorGridLines: MajorGridLines(width: 0),
-                title: AxisTitle(
-                  text: "Tiempo (m)"
+              SfCartesianChart(
+                  plotAreaBorderWidth: 0,
+                  primaryXAxis: const NumericAxis(
+                    majorGridLines: MajorGridLines(width: 0),
+                    title: AxisTitle(
+                      text: "Tiempo (m)"
+                    ),
+                  ),
+                  legend: Legend(
+                    isVisible: true, // Habilita la leyenda
+                    position: LegendPosition.bottom, // Posición en la parte inferior
+                    overflowMode: LegendItemOverflowMode.wrap, // Ajusta las leyendas si hay muchas
+                  ),
+                  primaryYAxis: const NumericAxis(
+                    axisLine: AxisLine(width: 0),
+                    majorTickLines: MajorTickLines(size: 0),
+                    title: AxisTitle(
+                      text: "Gb"
+                    ),
+                  ),
+                  series: <LineSeries<_ChartSampleData, int>>[
+                    LineSeries<_ChartSampleData, int>(
+                      dataSource: _chartData,
+                      xValueMapper: (_ChartSampleData data, int index) => data.country,
+                      yValueMapper: (_ChartSampleData data, int index) => data.sales,
+                      color: const Color.fromRGBO(192, 108, 132, 1),
+                      animationDuration: 0,
+                      onRendererCreated:
+                          (ChartSeriesController<_ChartSampleData, int> controller) {
+                        _chartSeriesController = controller;
+                      },
+                      name: "Replicas disponibles",
+                    ),
+                    // LineSeries<_ChartSampleData, int>(
+                    //   dataSource: _chartData,
+                    //   xValueMapper: (_ChartSampleData data, int index) => data.country,
+                    //   yValueMapper: (_ChartSampleData data, int index) => data.sales,
+                    //   color: const Color.fromRGBO(192, 108, 132, 1),
+                    //   animationDuration: 0,
+                    //   onRendererCreated:
+                    //       (ChartSeriesController<_ChartSampleData, int> controller) {
+                    //     _chartSeriesController = controller;
+                    //   },
+                    //   name: "Replicas no disponibles",
+                    // )
+                  ],
                 ),
-              ),
-              primaryYAxis: const NumericAxis(
-                axisLine: AxisLine(width: 0),
-                majorTickLines: MajorTickLines(size: 0),
-                title: AxisTitle(
-                  text: "Gb"
-                ),
-              ),
-              series: <LineSeries<_ChartSampleData, int>>[
-                LineSeries<_ChartSampleData, int>(
-                  dataSource: _chartData,
-                  xValueMapper: (_ChartSampleData data, int index) => data.country,
-                  yValueMapper: (_ChartSampleData data, int index) => data.sales,
-                  color: const Color.fromRGBO(192, 108, 132, 1),
-                  animationDuration: 0,
-                  onRendererCreated:
-                      (ChartSeriesController<_ChartSampleData, int> controller) {
-                    _chartSeriesController = controller;
-                  },
-                )
-              ],
-            ),
-        ),
-      );
+            ],
+          ),
+        );
   }
 
   /// Updates the data source periodically based on the timer.
