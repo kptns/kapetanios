@@ -140,6 +140,7 @@ class Menu extends StatelessWidget {
                   )
                 ),
                 child: DataTable(
+                  showCheckboxColumn: false,
                   columns: const <DataColumn>[
                     DataColumn(label: Text("POD")),
                     DataColumn(label: Text("STATUS")),
@@ -150,8 +151,14 @@ class Menu extends StatelessWidget {
                     DataColumn(label: Text("RESTART")),
                     DataColumn(label: Text("CPI USAGE/LIMITS")),
                     DataColumn(label: Text("MEM USAGE/LIMITS"))
-                  ], rows: const <DataRow>[
+                  ], rows: <DataRow>[
                     DataRow(
+                      onSelectChanged: (value) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const Monitor()),
+                        );
+                      },
                       cells: <DataCell>[
                         DataCell(Text("1")),
                         DataCell(Text("1")),

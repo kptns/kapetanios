@@ -57,23 +57,101 @@ class _MonitorState extends State<Monitor> {
               ),
               child: Row(
                 children: [
-                  infoLabel("Cluster", "fmoreno-k8s")
+                  infoLabel("Cluster", "fmoreno-k8s"),
+                  infoLabel("Namespace", "default"),
+                  infoLabel("Age", "5 days"),
+                  infoLabel("Revision", "1"),
                 ],
               ),
             ),
             Container(
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.grey.withAlpha(70),
+                    width: 2
+                  )
+                )
+              ),
               child: Row(
                 children: [
-                  topMenu("Descripcion", false),
-                  topMenu("Explorar", true),
+                  topMenu("YAML", false),
+                  topMenu("Logs", false),
+                  topMenu("APM", false),
+                  topMenu("Profiles", false),
+                  topMenu("Metrics", true),
+                  topMenu("Processes", false),
+                  topMenu("Network", false),
+                  topMenu("Events", false),
                 ],
               ),
             ),
-            Row(
-              children: [
-                Expanded(child: LineChart(titulo: 'Replicas disponibles y no disponibles',)),
-                Expanded(child: LineChart(titulo: 'Replicas actualizadas y vencidas',)),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  DropdownButton<String>(
+   items: ["Handball", "Volleyball", "Football", "Badminton"].map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              
+                alignment: Alignment.bottomRight,
+                borderRadius: BorderRadius.circular(15),
+                
+                underline: SizedBox(),
+              onChanged: (value) {
+                
+              },
+)
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: LineChart(
+                          titulo: 'Replicas disponibles y no disponibles',
+                          legendsName: [
+                            "Replicas disponibles", "Replicas no disponibles", "Replicas esperadas"
+                          ],
+                        )
+                      ),
+                      Expanded(child: LineChart(
+                          titulo: 'Replicas actualizadas y vencidas',
+                          legendsName: [
+                            "Replicas disponibles", "Replicas no disponibles", "Replicas esperadas"
+                          ],
+                        )
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: LineChart(
+                          titulo: 'CPU Solicitado, Limite y Usado',
+                          legendsName: [
+                            "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
+                          ],
+                        )
+                      ),
+                      Expanded(child: LineChart(
+                          titulo: 'Memoria Solicitada, Limite y Usado',
+                          legendsName: [
+                            "Memoria usada", "Memoria limite", "Memoria solicitada"
+                          ],
+                        )
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             )
           ],
         ),
@@ -81,31 +159,34 @@ class _MonitorState extends State<Monitor> {
     );
   }
 
-  Container infoLabel(String titulo, String texto) {
-    return Container(
-      width: 250,
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: 1.2,
-          color: Colors.black.withAlpha(60),
+  Padding infoLabel(String titulo, String texto) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: Container(
+        width: 250,
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          border: Border.all(
+            width: 1.2,
+            color: Colors.black.withAlpha(60),
+          ),
+          borderRadius: BorderRadius.all(
+            Radius.circular(4)
+          )
         ),
-        borderRadius: BorderRadius.all(
-          Radius.circular(4)
-        )
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(titulo.toUpperCase(), style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600
-          ),),
-          Text(texto, style: TextStyle(
-            fontSize: 15
-          ),)
-        ],
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(titulo.toUpperCase(), style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600
+            ),),
+            Text(texto, style: TextStyle(
+              fontSize: 15
+            ),)
+          ],
+        ),
       ),
     );
   }

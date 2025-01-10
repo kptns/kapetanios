@@ -7,7 +7,8 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 class LineChart extends StatefulWidget {
   final String titulo;
-  const LineChart({super.key, required this.titulo});
+  final List<String> legendsName;
+  const LineChart({super.key, required this.titulo, required this.legendsName});
 
   @override
   State<LineChart> createState() => _LineChartState();
@@ -21,36 +22,17 @@ class _LineChartState extends State<LineChart> {
     );
   }
 
-  late int _count;
+  late int _count = 0;
 
-  List<_ChartSampleData>? _chartData;
+  List<_ChartSampleData>? _chartData = [];
+  List<_ChartSampleData>? _chartData2 = [];
   ChartSeriesController<_ChartSampleData, int>? _chartSeriesController;
+  ChartSeriesController<_ChartSampleData, int>? _chartSeriesController2;
+  ChartSeriesController<_ChartSampleData, int>? _chartSeriesController3;
   Timer? _timer;
 
   @override
   void initState() {
-    _count = 19;
-    _chartData = <_ChartSampleData>[
-      _ChartSampleData(0, 42),
-      _ChartSampleData(1, 47),
-      _ChartSampleData(2, 33),
-      _ChartSampleData(3, 49),
-      _ChartSampleData(4, 54),
-      _ChartSampleData(5, 41),
-      _ChartSampleData(6, 58),
-      _ChartSampleData(7, 51),
-      _ChartSampleData(8, 98),
-      _ChartSampleData(9, 41),
-      _ChartSampleData(10, 53),
-      _ChartSampleData(11, 72),
-      _ChartSampleData(12, 86),
-      _ChartSampleData(13, 52),
-      _ChartSampleData(14, 94),
-      _ChartSampleData(15, 92),
-      _ChartSampleData(16, 86),
-      _ChartSampleData(17, 72),
-      _ChartSampleData(18, 94),
-    ];
     super.initState();
   }
   
@@ -102,20 +84,32 @@ class _LineChartState extends State<LineChart> {
                           (ChartSeriesController<_ChartSampleData, int> controller) {
                         _chartSeriesController = controller;
                       },
-                      name: "Replicas disponibles",
+                      name: widget.legendsName[0],
                     ),
-                    // LineSeries<_ChartSampleData, int>(
-                    //   dataSource: _chartData,
-                    //   xValueMapper: (_ChartSampleData data, int index) => data.country,
-                    //   yValueMapper: (_ChartSampleData data, int index) => data.sales,
-                    //   color: const Color.fromRGBO(192, 108, 132, 1),
-                    //   animationDuration: 0,
-                    //   onRendererCreated:
-                    //       (ChartSeriesController<_ChartSampleData, int> controller) {
-                    //     _chartSeriesController = controller;
-                    //   },
-                    //   name: "Replicas no disponibles",
-                    // )
+                    LineSeries<_ChartSampleData, int>(
+                      dataSource: _chartData,
+                      xValueMapper: (_ChartSampleData data, int index) => data.country,
+                      yValueMapper: (_ChartSampleData data, int index) => data.sales-100,
+                      color: const Color.fromRGBO(192, 108, 132, 1),
+                      animationDuration: 0,
+                      onRendererCreated:
+                          (ChartSeriesController<_ChartSampleData, int> controller) {
+                        _chartSeriesController2 = controller;
+                      },
+                      name: widget.legendsName[1],
+                    ),
+                    LineSeries<_ChartSampleData, int>(
+                      dataSource: _chartData,
+                      xValueMapper: (_ChartSampleData data, int index) => data.country,
+                      yValueMapper: (_ChartSampleData data, int index) => data.sales+100,
+                      color: const Color.fromRGBO(192, 108, 132, 1),
+                      animationDuration: 0,
+                      onRendererCreated:
+                          (ChartSeriesController<_ChartSampleData, int> controller) {
+                        _chartSeriesController3 = controller;
+                      },
+                      name: widget.legendsName[2],
+                    )
                   ],
                 ),
             ],
@@ -128,6 +122,7 @@ class _LineChartState extends State<LineChart> {
     if (true) {
       _chartData!.add(
         _ChartSampleData(_count, _generateRandomInteger(10, 100)),
+        
       );
       if (_chartData!.length == 50) {
         _chartData!.removeAt(0);
@@ -135,8 +130,24 @@ class _LineChartState extends State<LineChart> {
           addedDataIndexes: <int>[_chartData!.length - 1],
           removedDataIndexes: <int>[0],
         );
+        
+        _chartSeriesController2?.updateDataSource(
+          addedDataIndexes: <int>[_chartData!.length - 1],
+          removedDataIndexes: <int>[0],
+        );
+
+        _chartSeriesController3?.updateDataSource(
+          addedDataIndexes: <int>[_chartData!.length - 1],
+          removedDataIndexes: <int>[0],
+        );
       } else {
         _chartSeriesController?.updateDataSource(
+          addedDataIndexes: <int>[_chartData!.length - 1],
+        );
+        _chartSeriesController2?.updateDataSource(
+          addedDataIndexes: <int>[_chartData!.length - 1],
+        );
+        _chartSeriesController3?.updateDataSource(
           addedDataIndexes: <int>[_chartData!.length - 1],
         );
       }
