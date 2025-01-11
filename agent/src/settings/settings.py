@@ -47,6 +47,13 @@ MAX_RETRIES = int(os.getenv('MAX_RETRIES', 3))
 RETRY_DELAY = int(os.getenv('RETRY_DELAY', 1))  # seconds
 
 
+# ConfigManager values
+INITIAL_POLLING_INTERVAL = int(os.getenv('CONFIG_MANAGER_POLLING_INTERVAL', 10))  # seconds
+
+# Agent values
+AGENT_TIME_INTERVAL = int(os.getenv('AGENT_POLLING_INTERVAL', 5))  # seconds
+
+
 def get_full_api_url(endpoint: str) -> str:
     """
     Builds the complete URL for a specific endpoint

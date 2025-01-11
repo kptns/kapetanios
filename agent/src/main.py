@@ -1,31 +1,36 @@
 from multiprocessing import Queue
 import logging
-from src.config.manager import ConfigManager
-from src.agent import Agent
+from config.manager import ConfigManager
+from agent import Agent
 import time
 import sys
 from utils.process import start_single_process
 from typing import List
+import multiprocessing
+import platform
 
 logger = logging.getLogger(__name__)
 
 
-def run_processes(instances: List[object]) -> None:
+def run_queues(instances: List[object]) -> List[Queue]:
+    """
+    Creates a queue for each process.
+    """
+    queues = list()
+    for _ in range(len(instances)):
+        queues.append(Queue())
+    return queues
+
+
+def run_processes(instances: List[object]) -> List[object]:
     """
     Runs the processes.
     
     Args:
         instances: List[object]
+    Returns:
+        List[object]: Lista de procesos iniciados
     """
-    
-    def run_queues(instances: List[object]) -> List[Queue]:
-        """
-        Creates a queue for each process.
-        """
-        queues = list()
-        for instance in len(instances):
-            queues.append(Queue())
-        return queues
     
     # Create queues
     queues = run_queues(instances)
@@ -44,11 +49,13 @@ def run_processes(instances: List[object]) -> None:
     for instance in instances[:1]:
         if process := start_single_process(
             instance(
-                config_queue=queues[1]
+                queues=queues
             )
         ):
             processes.append(process)
-            
+
+    return processes
+
 
 def shutdown_processes(processes: List[object]) -> None:
     """
@@ -59,6 +66,7 @@ def shutdown_processes(processes: List[object]) -> None:
     """
     for process in processes:
         if process.is_alive():
+            print("Terminating process: ", process)
             process.terminate()
             process.join()
 
@@ -66,10 +74,10 @@ def shutdown_processes(processes: List[object]) -> None:
 def main():
     try:
         # Create instances with Agent as orchestrator
-        processes = run_processes(
-            Agent(),
-            ConfigManager()
-        )
+        processes = run_processes([
+            Agent,
+            ConfigManager
+        ])
 
         # Wait for termination signal
         while True:
@@ -82,4 +90,7 @@ def main():
 
 
 if __name__ == "__main__":
+    # Detect OS and set appropriate start method
+    if platform.system() == 'Darwin':  # macOS
+        multiprocessing.set_start_method('fork')
     main()
