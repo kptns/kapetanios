@@ -6,5 +6,5 @@ import com.kapetanios.kptns.Entitys.MetricsEntity;
 
 @Service
 public interface MetricsService {
-    public MetricsEntity getMetrics();
+    public MetricsEntity getMetrics(long from, long to, String query);
 }

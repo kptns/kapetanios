@@ -1,7 +1,13 @@
+server:
+  port: 8090
+  servlet:
+    context-path: /kapetanios/v1
+
 app:
-    datadogConfig: 
-        apiKey: 5bb1b4ba6f51ba73cf9c3bede5088bc2
-        applicationKey: 8431c01cc28d50ac6b031a8153b57cea23e17f37
+  datadog-config:
+    api-url: https://api.datadoghq.com/api/v1/query
+    api-key: 09ae75edc10ec7e8eb3356dd903dd9ba
+    application-key: e542b10fc533211c55d23b6cf5759f6a93076b60
 
 
 management:
@@ -9,7 +15,7 @@ management:
     metrics:
       export:
         enabled: true
-        api-key: YOUR_DATADOG_API_KEY
-        application-key: YOUR_DATADOG_APPLICATION_KEY
-        host-tag: YOUR_HOST_TAG # Opcional, para etiquetar el host
-        step: 1m               # Intervalo de envío (default: 1 minuto)
+        api-key: 6af6ab344be0a4b606166ce267674556
+        application-key: e542b10fc533211c55d23b6cf5759f6a93076b60
+        host-tag: kapetanios
+        step: 1m
