@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import Kapetanios
+from .views import Metrics
 
 urlpatterns = [
-    path('metrics/', Kapetanios.as_view(), name="kapts")
+    path('metrics/', Metrics.as_view(), name="kapts")
 ]

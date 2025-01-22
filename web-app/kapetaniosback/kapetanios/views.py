@@ -5,10 +5,10 @@ from kapetanios.utils.ResponseUtils import CustomResponse
 from datadog import initialize, api
 import time
 
-# Create your views here.
-class Kapetanios(APIView):
+class Metrics(APIView):
     def get(self, request):
         responseData = {}
+        ventana = int(request.GET.get('ventana', 60))
         options = {
             'api_key': "09ae75edc10ec7e8eb3356dd903dd9ba",
             'app_key': "e542b10fc533211c55d23b6cf5759f6a93076b60"
@@ -28,7 +28,7 @@ class Kapetanios(APIView):
             f'kubernetes.network.tx_bytes{{kube_deployment:{deployment_name}}}'
         ]
         now = int(time.time())
-        last_14_days = now - 3600
+        last_14_days = now - ventana
 
         for query in metric_queries:
             result = api.Metric.query(
