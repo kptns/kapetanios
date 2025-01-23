@@ -2,15 +2,46 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from Utils.ResponseUtils import CustomResponse
 import firebase_admin
+from firebase_admin import credentials, firestore
+from .firebaseservice import FirebaseService
+import os
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Directorio raíz del proyecto
+credential_path = os.path.join(BASE_DIR, "Assets/firebase-keys.json")
+
+firebaseService = FirebaseService(credential_path)
 
 class Update(APIView):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)  # Llama al constructor de la clase base
-        cred = credentials.Certificate("path/to/your-service-account-file.json")
-
-        # Inicializar la app de Firebase
-        firebase_admin.initialize_app(cred)
-
+    def post(self, request):
+        datos = {
+            "nombre": request.POST.get("nombre"),
+            "edad": request.POST.get("edad"),
+        }
+        doc_id = firebaseService.insertar_documento("agentes", None, datos)
+        return CustomResponse.success(data="Documento insertado")
+    
     def get(self, request):
-        # TODO: Configuraciones que debe saber el agente
-        return CustomResponse.success(data="Todo bien")
+        doc_id = request.GET.get("id")
+        documento = firebaseService.obtener_documento("agentes", doc_id)
+        if documento:
+            return CustomResponse.success(data=documento)
+        return CustomResponse.error(message="Documento no encontrado")
+    
+    def delete(self, request):
+        doc_id = request.GET.get("id")
+        firebaseService.eliminar_documento("agentes", doc_id)
+        return CustomResponse.success(data="Documento eliminado")
+    
+    def put(self, request):
+        """
+        Endpoint para actualizar un documento existente.
+        """
+        doc_id = request.POST.get("id")
+        datos = {
+            "nombre": request.POST.get("nombre"),
+            "edad": request.POST.get("edad"),
+        }
+        firebaseService.actualizar_documento("agentes", doc_id, datos)
+        return CustomResponse.success(data="Documento actualizado")
+
+
