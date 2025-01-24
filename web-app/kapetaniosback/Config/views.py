@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from Utils.ResponseUtils import CustomResponse
 import firebase_admin
 from firebase_admin import credentials, firestore
-from .firebaseservice import FirebaseService
+from Utils.firebaseservice import FirebaseService
 import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Directorio raíz del proyecto
@@ -33,9 +33,6 @@ class Update(APIView):
         return CustomResponse.success(data="Documento eliminado")
     
     def put(self, request):
-        """
-        Endpoint para actualizar un documento existente.
-        """
         doc_id = request.POST.get("id")
         datos = {
             "nombre": request.POST.get("nombre"),
