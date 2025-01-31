@@ -16,12 +16,16 @@ class FirebaseService:
         return doc_ref.id
 
     def obtener_documento(self, coleccion, documento_id):
-        doc_ref = self.db.collection(coleccion).where("id", "==", documento_id)
-        doc = doc_ref.get()
-        if doc.exists:
-            return doc.to_dict()
+        col_ref = self.db.collection(coleccion)
+
+        if documento_id == "":
+            docs = col_ref.stream()
         else:
-            return None
+            query = col_ref.where(filter=firestore.FieldFilter("id", "==", documento_id))
+            docs = query.stream()
+
+        resultados = [doc.to_dict() for doc in docs]
+        return resultados if resultados else None
 
     def obtener_coleccion(self, coleccion):
         docs = self.db.collection(coleccion).stream()

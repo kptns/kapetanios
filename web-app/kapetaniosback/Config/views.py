@@ -5,6 +5,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from Utils.firebaseservice import FirebaseService
 import os
+import json
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Directorio raíz del proyecto
 credential_path = os.path.join(BASE_DIR, "Assets/firebase-keys.json")
@@ -13,13 +14,10 @@ firebaseService = FirebaseService(credential_path)
 
 class Update(APIView):
     def post(self, request):
-        datos = {
-            "nomCluster": request.POST.get("nomCluster"),
-            "registryHost": request.POST.get("registryHost"),
-            "kapsHost": request.POST.get("kapsHost"),
-        }
+        datos = json.loads(request.body.decode('utf-8'))
+        print(datos)
         doc_id = firebaseService.insertar_documento("agentes", None, datos)
-        return CustomResponse.success(data="Documento insertado")
+        return CustomResponse.success(data="Agente registrado con exito.")
     
     def get(self, request):
         doc_id = request.GET.get("id")
