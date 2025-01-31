@@ -17,3 +17,11 @@ class CustomResponse:
             "message": message,
             "data": None
         }, status=status_code)
+    
+    @staticmethod
+    def notFound(message="No se encontro algun documento", status_code=status.HTTP_404_NOT_FOUND):
+        return Response({
+            "success": False,
+            "message": message,
+            "data": None
+        }, status=status_code)

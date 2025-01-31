@@ -15,7 +15,6 @@ firebaseService = FirebaseService(credential_path)
 class Update(APIView):
     def post(self, request):
         datos = json.loads(request.body.decode('utf-8'))
-        print(datos)
         doc_id = firebaseService.insertar_documento("agentes", None, datos)
         return CustomResponse.success(data="Agente registrado con exito.")
     
