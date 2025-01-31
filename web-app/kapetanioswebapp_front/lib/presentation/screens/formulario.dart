@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kapetanioswebapp_front/domain/entities/AgentEntity.dart';
+import 'package:kapetanioswebapp_front/domain/entities/ResponseEntity.dart';
+import 'package:kapetanioswebapp_front/domain/use_cases/AgenteService.dart';
 import 'package:kapetanioswebapp_front/presentation/screens/menu.dart';
+import 'package:quickalert/quickalert.dart';
 
 class RegistroNuevoMonitor extends StatefulWidget {
   const RegistroNuevoMonitor({super.key});
@@ -23,6 +27,8 @@ helm repo add datadog https://helm.datadoghq.com
 helm install datadog-operator datadog/datadog-operator
 kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f51ba73cf9c3bede5088bc2""";
   String deployText = "kubectl apply -f datadog-agent.yaml";
+  Agenteservice agenteservice = Agenteservice();
+  Agente agente = Agente(clusterName: "cluster", hostRegistry: "host", hostKapetanios: "host", dateTime: DateTime.now(), pod: '1', status: 'Desplegado', ready: 1, restart: 0, cpuUsageLimit: 50, memUsageLimit: 20);
 
   @override
   Widget build(BuildContext context) {
@@ -248,11 +254,26 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                   ),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => const Menu()),
-                                    );
+                                  onPressed: () async {
+                                     
+                                    Responseentity? response = await agenteservice.saveAgent(agente);
+                                    if(response!.getSuccess){
+                                      await QuickAlert.show(
+                                        context: context, 
+                                        type: QuickAlertType.success,
+                                        text: response.getData
+                                      );
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const Menu()),
+                                      );
+                                    }else{
+                                      QuickAlert.show(
+                                        context: context, 
+                                        type: QuickAlertType.error,
+                                        text: response.getData
+                                      );
+                                    }
                                   },
                                 ),
                               ],

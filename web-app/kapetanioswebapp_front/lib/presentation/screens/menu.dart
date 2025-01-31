@@ -3,11 +3,65 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kapetanioswebapp_front/domain/entities/AgentEntity.dart';
+import 'package:kapetanioswebapp_front/domain/entities/ResponseEntity.dart';
+import 'package:kapetanioswebapp_front/domain/use_cases/AgenteService.dart';
 import 'package:kapetanioswebapp_front/presentation/screens/formulario.dart';
 import 'package:kapetanioswebapp_front/presentation/screens/monitor.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-class Menu extends StatelessWidget {
+class Menu extends StatefulWidget {
   const Menu({super.key});
+
+  @override
+  State<Menu> createState() => _MenuState();
+}
+
+class _MenuState extends State<Menu> {
+  String agente = "";
+  Agenteservice agenteservice = Agenteservice();
+  List<DataRow> tablaAgentes = [];
+
+  @override
+  void initState() {
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await getAgent();
+    });
+    super.initState();
+  }
+
+  Future<void> getAgent() async {
+    List<Agente>? agentes = await agenteservice.getAgents(agente);
+    print(agentes);
+    if(agentes!.isNotEmpty){
+      for (Agente agente in agentes) {
+        tablaAgentes.add(
+          DataRow(
+            onSelectChanged: (value) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Monitor()),
+              );
+            },
+            cells: <DataCell>[
+              DataCell(Text(agente.pod)),
+              DataCell(Text(agente.status)),
+              DataCell(Text(agente.clusterName)),
+              DataCell(Text(agente.hostKapetanios)),
+              DataCell(Text(agente.dateTime.toString())),
+              DataCell(Text(agente.ready.toString())),
+              DataCell(Text(agente.restart.toString())),
+              DataCell(Text(agente.cpuUsageLimit.toString())),
+              DataCell(Text(agente.memUsageLimit.toString())),
+            ]
+          )
+        );
+      }
+    }else{
+      tablaAgentes = [];
+    }
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +173,13 @@ class Menu extends StatelessWidget {
                             topRight: Radius.circular(8)
                           )
                         ),
-                      )
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          agente = value;
+                          getAgent();
+                        });
+                      },
                     ),
                   )
                 ],
@@ -151,27 +211,7 @@ class Menu extends StatelessWidget {
                     DataColumn(label: Text("RESTART")),
                     DataColumn(label: Text("CPI USAGE/LIMITS")),
                     DataColumn(label: Text("MEM USAGE/LIMITS"))
-                  ], rows: <DataRow>[
-                    DataRow(
-                      onSelectChanged: (value) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const Monitor()),
-                        );
-                      },
-                      cells: <DataCell>[
-                        DataCell(Text("1")),
-                        DataCell(Text("1")),
-                        DataCell(Text("1")),
-                        DataCell(Text("1")),
-                        DataCell(Text("1")),
-                        DataCell(Text("1")),
-                        DataCell(Text("1")),
-                        DataCell(Text("1")),
-                        DataCell(Text("1")),
-                      ]
-                    )
-                  ]
+                  ], rows: tablaAgentes
                 ),
               ),
             )
