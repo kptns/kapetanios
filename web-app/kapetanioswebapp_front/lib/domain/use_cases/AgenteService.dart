@@ -41,9 +41,7 @@ class Agenteservice {
         },
       );
       Responseentity response = Responseentity.fromJson(utf8.decode(reponse.bodyBytes));
-      print(response.getSuccess);
       if(response.getSuccess == false){
-        print("retusn");
         return [];
       }
       for (Map<String, dynamic> agente  in (response).getData as List) {
@@ -55,6 +53,47 @@ class Agenteservice {
     } catch (e) {
       print('Excepción: $e');
       return [];
+    }
+  }
+
+  Future<Responseentity?> deleteAgent(String id) async {
+    List<Agente> agentes = [];
+    Uri  url = Uri.parse(url_base).replace(
+      queryParameters: {
+        "id": id
+      }
+    );
+    try {
+      final reponse = await http.delete(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+      return Responseentity.fromJson(utf8.decode(reponse.bodyBytes));
+      
+    } catch (e) {
+      print('Excepción: $e');
+      return null;
+    }
+  }
+
+  Future<Responseentity?> updateAgent(Agente agente) async {
+    Uri  url = Uri.parse(url_base);
+    try {
+      final reponse = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(agente.toMap())
+      );
+
+      return Responseentity.fromJson(utf8.decode(reponse.bodyBytes));
+      
+    } catch (e) {
+      print('Excepción: $e');
+      return null;
     }
   }
 }

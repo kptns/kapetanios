@@ -9,6 +9,8 @@ import 'package:kapetanioswebapp_front/domain/use_cases/AgenteService.dart';
 import 'package:kapetanioswebapp_front/presentation/screens/formulario.dart';
 import 'package:kapetanioswebapp_front/presentation/screens/monitor.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 class Menu extends StatefulWidget {
   const Menu({super.key});
 
@@ -32,7 +34,7 @@ class _MenuState extends State<Menu> {
 
   Future<void> getAgent() async {
     List<Agente>? agentes = await agenteservice.getAgents(agente);
-    print(agentes);
+    tablaAgentes.clear();
     if(agentes!.isNotEmpty){
       for (Agente agente in agentes) {
         tablaAgentes.add(
@@ -53,6 +55,71 @@ class _MenuState extends State<Menu> {
               DataCell(Text(agente.restart.toString())),
               DataCell(Text(agente.cpuUsageLimit.toString())),
               DataCell(Text(agente.memUsageLimit.toString())),
+              DataCell(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => RegistroNuevoMonitor(agente: agente)),
+                          );
+                        },
+                        child: Icon(FontAwesomeIcons.edit, color: Colors.white),
+                        style: ElevatedButton.styleFrom(
+                          shape: ContinuousRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
+                          backgroundColor: Colors.blue, // <-- Button color
+                          foregroundColor: Colors.red, // <-- Splash color
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.confirm,
+                          text: 'Quieres eliminar el agente '+agente.clusterName+"?",
+                          confirmBtnText: 'Si',
+                          cancelBtnText: 'No',
+                          confirmBtnColor: Colors.green,
+                          onCancelBtnTap: (){
+                            Navigator.pop(context);
+                          },
+                          onConfirmBtnTap: () async {
+                            Responseentity? response = await agenteservice.deleteAgent(agente.id);
+                            
+                            if(response!.getSuccess){
+                              Navigator.pop(context);
+                              QuickAlert.show(
+                                context: context, 
+                                type: QuickAlertType.success,
+                                text: response.getData
+                              );
+                              getAgent();
+                            }else{
+                              Navigator.pop(context);
+                              await QuickAlert.show(
+                                context: context, 
+                                type: QuickAlertType.error,
+                                text: response.getData
+                              );
+                            }
+                          },
+                        );
+                      },
+                      child: Icon(FontAwesomeIcons.x, color: Colors.white),
+                      style: ElevatedButton.styleFrom(
+                        shape: ContinuousRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
+                        backgroundColor: Colors.red, // <-- Button color
+                        foregroundColor: Colors.red, // <-- Splash color
+                      ),
+                    )
+                  ],
+                )
+              ),
             ]
           )
         );
@@ -106,7 +173,7 @@ class _MenuState extends State<Menu> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegistroNuevoMonitor()),
+                        MaterialPageRoute(builder: (context) => RegistroNuevoMonitor(agente: Agente(dateTime: DateTime.now())),),
                       );
                     },
                     icon: Icon(FontAwesomeIcons.plus, size: 20, color: Colors.white,),
@@ -210,7 +277,8 @@ class _MenuState extends State<Menu> {
                     DataColumn(label: Text("READY")),
                     DataColumn(label: Text("RESTART")),
                     DataColumn(label: Text("CPI USAGE/LIMITS")),
-                    DataColumn(label: Text("MEM USAGE/LIMITS"))
+                    DataColumn(label: Text("MEM USAGE/LIMITS")),
+                    DataColumn(label: Text(""))
                   ], rows: tablaAgentes
                 ),
               ),

@@ -9,7 +9,8 @@ import 'package:kapetanioswebapp_front/presentation/screens/menu.dart';
 import 'package:quickalert/quickalert.dart';
 
 class RegistroNuevoMonitor extends StatefulWidget {
-  const RegistroNuevoMonitor({super.key});
+  final Agente agente;
+  const RegistroNuevoMonitor({super.key, required this.agente});
 
   @override
   State<RegistroNuevoMonitor> createState() => _RegistroNuevoMonitorState();
@@ -28,7 +29,15 @@ helm install datadog-operator datadog/datadog-operator
 kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f51ba73cf9c3bede5088bc2""";
   String deployText = "kubectl apply -f datadog-agent.yaml";
   Agenteservice agenteservice = Agenteservice();
-  Agente agente = Agente(clusterName: "cluster", hostRegistry: "host", hostKapetanios: "host", dateTime: DateTime.now(), pod: '1', status: 'Desplegado', ready: 1, restart: 0, cpuUsageLimit: 50, memUsageLimit: 20);
+  late Agente agente; //Agente(dateTime: DateTime.now());
+  bool actualizar = false;
+
+  @override
+  void initState() {
+    agente = widget.agente;
+    actualizar = agente.id != "";
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,9 +133,10 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                           children: [
                                             Padding(
                                               padding: const EdgeInsets.all(8.0),
-                                              child: TextField(
+                                              child: TextFormField(
+                                                initialValue: agente.clusterName,
                                                 onChanged: (value) {
-                                                  print("3213");
+                                                  agente.clusterName = value;
                                                 },
                                                 decoration: InputDecoration(
                                                   hintText: "Nombre del cluster",
@@ -139,9 +149,10 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                               ),
                                             ),Padding(
                                               padding: const EdgeInsets.all(8.0),
-                                              child: TextField(
+                                              child: TextFormField(
+                                                initialValue: agente.hostKapetanios,
                                                 onChanged: (value) {
-                                                  print("3213");
+                                                  agente.hostRegistry = value;
                                                 },
                                                 decoration: InputDecoration(
                                                   hintText: "Registry host",
@@ -154,9 +165,10 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                               ),
                                             ),Padding(
                                               padding: const EdgeInsets.all(8.0),
-                                              child: TextField(
+                                              child: TextFormField(
+                                                initialValue: agente.hostKapetanios,
                                                 onChanged: (value) {
-                                                  print("3213");
+                                                  agente.hostKapetanios = value;
                                                 },
                                                 decoration: InputDecoration(
                                                   hintText: "Kapetanios host",
@@ -243,7 +255,7 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                 SizedBox(width: 20,),
                                 ElevatedButton.icon(
                                   icon: const Icon(FontAwesomeIcons.save, size: 18),
-                                  label: Text('Guardar', style: TextStyle(
+                                  label: Text(actualizar ? "Actualizar" : "Guardar", style: TextStyle(
                                     fontSize: 20
                                   ),),
                                   style: ElevatedButton.styleFrom(
@@ -256,7 +268,12 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                   ),
                                   onPressed: () async {
                                      
-                                    Responseentity? response = await agenteservice.saveAgent(agente);
+                                    Responseentity? response;
+                                    if(actualizar){
+                                      response = await agenteservice.updateAgent(agente);
+                                    }else{
+                                      response = await agenteservice.saveAgent(agente);
+                                    }
                                     if(response!.getSuccess){
                                       await QuickAlert.show(
                                         context: context, 

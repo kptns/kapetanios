@@ -15,6 +15,7 @@ firebaseService = FirebaseService(credential_path)
 class Update(APIView):
     def post(self, request):
         datos = json.loads(request.body.decode('utf-8'))
+        datos.pop("id")
         doc_id = firebaseService.insertar_documento("agentes", None, datos)
         return CustomResponse.success(data="Agente registrado con exito.")
     
@@ -31,13 +32,8 @@ class Update(APIView):
         return CustomResponse.success(data="Documento eliminado")
     
     def put(self, request):
-        doc_id = request.POST.get("id")
-        datos = {
-            "nomCluster": request.POST.get("nomCluster"),
-            "registryHost": request.POST.get("registryHost"),
-            "kapsHost": request.POST.get("kapsHost"),
-        }
+        datos = json.loads(request.body.decode('utf-8'))
+        doc_id = datos["id"]
+        datos.pop("id")
         firebaseService.actualizar_documento("agentes", doc_id, datos)
         return CustomResponse.success(data="Documento actualizado")
-
-

@@ -24,7 +24,11 @@ class FirebaseService:
             query = col_ref.where(filter=firestore.FieldFilter("id", "==", documento_id))
             docs = query.stream()
 
-        resultados = [doc.to_dict() for doc in docs]
+        resultados = []
+        for doc in docs:
+            data = doc.to_dict()
+            data["id"] = doc.id
+            resultados.append(data)
         return resultados if resultados else None
 
     def obtener_coleccion(self, coleccion):

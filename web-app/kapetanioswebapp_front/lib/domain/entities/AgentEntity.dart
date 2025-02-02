@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 class Agente {
+  String id;
   String clusterName;
   String hostRegistry;
   String hostKapetanios;
@@ -12,6 +13,10 @@ class Agente {
   int restart;
   int cpuUsageLimit;
   int memUsageLimit;
+get getId => this.id;
+
+ set setId(String id) => this.id = id;
+
   get getClusterName => this.clusterName;
 
  set setClusterName( clusterName) => this.clusterName = clusterName;
@@ -52,20 +57,21 @@ class Agente {
 
  set setMemUsageLimit( memUsageLimit) => this.memUsageLimit = memUsageLimit;
   Agente({
-    required this.clusterName,
-    required this.hostRegistry,
-    required this.hostKapetanios,
+    this.id = "",
+    this.clusterName = "",
+    this.hostRegistry = "",
+    this.hostKapetanios = "",
     required this.dateTime,
-    required this.pod,
-    required this.status,
-    required this.ready,
-    required this.restart,
-    required this.cpuUsageLimit,
-    required this.memUsageLimit,
+    this.pod = "",
+    this.status = "",
+    this.ready = 0,
+    this.restart = 0,
+    this.cpuUsageLimit = 0,
+    this.memUsageLimit = 0,
   });
 
-
   Agente copyWith({
+    String? id,
     String? clusterName,
     String? hostRegistry,
     String? hostKapetanios,
@@ -78,6 +84,7 @@ class Agente {
     int? memUsageLimit,
   }) {
     return Agente(
+      id: id ?? this.id,
       clusterName: clusterName ?? this.clusterName,
       hostRegistry: hostRegistry ?? this.hostRegistry,
       hostKapetanios: hostKapetanios ?? this.hostKapetanios,
@@ -93,6 +100,7 @@ class Agente {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
+      'id': id,
       'clusterName': clusterName,
       'hostRegistry': hostRegistry,
       'hostKapetanios': hostKapetanios,
@@ -108,6 +116,7 @@ class Agente {
 
   factory Agente.fromMap(Map<String, dynamic> map) {
     return Agente(
+      id: map['id'] as String,
       clusterName: map['clusterName'] as String,
       hostRegistry: map['hostRegistry'] as String,
       hostKapetanios: map['hostKapetanios'] as String,
@@ -127,7 +136,7 @@ class Agente {
 
   @override
   String toString() {
-    return 'Agente(clusterName: $clusterName, hostRegistry: $hostRegistry, hostKapetanios: $hostKapetanios, dateTime: $dateTime, pod: $pod, status: $status, ready: $ready, restart: $restart, cpuUsageLimit: $cpuUsageLimit, memUsageLimit: $memUsageLimit)';
+    return 'Agente(id: $id, clusterName: $clusterName, hostRegistry: $hostRegistry, hostKapetanios: $hostKapetanios, dateTime: $dateTime, pod: $pod, status: $status, ready: $ready, restart: $restart, cpuUsageLimit: $cpuUsageLimit, memUsageLimit: $memUsageLimit)';
   }
 
   @override
@@ -135,6 +144,7 @@ class Agente {
     if (identical(this, other)) return true;
   
     return 
+      other.id == id &&
       other.clusterName == clusterName &&
       other.hostRegistry == hostRegistry &&
       other.hostKapetanios == hostKapetanios &&
@@ -149,7 +159,8 @@ class Agente {
 
   @override
   int get hashCode {
-    return clusterName.hashCode ^
+    return id.hashCode ^
+      clusterName.hashCode ^
       hostRegistry.hashCode ^
       hostKapetanios.hashCode ^
       dateTime.hashCode ^
