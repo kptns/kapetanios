@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:kapetanioswebapp_front/domain/use_cases/MetricsService.dart';
 import 'package:kapetanioswebapp_front/presentation/widgets/LineChart.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -121,6 +122,7 @@ class _MonitorState extends State<Monitor> {
                           legendsName: [
                             "Replicas disponibles", "Replicas no disponibles", "Replicas esperadas"
                           ],
+                          ruta: "pods",
                         )
                       ),
                       Expanded(child: LineChart(
@@ -128,6 +130,7 @@ class _MonitorState extends State<Monitor> {
                           legendsName: [
                             "Replicas disponibles", "Replicas no disponibles", "Replicas esperadas"
                           ],
+                          ruta: "rxbytes",
                         )
                       ),
                     ],
@@ -139,6 +142,7 @@ class _MonitorState extends State<Monitor> {
                           legendsName: [
                             "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
                           ],
+                          ruta: "cpu",
                         )
                       ),
                       Expanded(child: LineChart(
@@ -146,6 +150,19 @@ class _MonitorState extends State<Monitor> {
                           legendsName: [
                             "Memoria usada", "Memoria limite", "Memoria solicitada"
                           ],
+                          ruta: "memory",
+                        )
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: LineChart(
+                          titulo: 'CPU Solicitado, Limite y Usado',
+                          legendsName: [
+                            "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
+                          ],
+                          ruta: "cpu",
                         )
                       ),
                     ],

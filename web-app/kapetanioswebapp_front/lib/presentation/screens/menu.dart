@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:kapetanioswebapp_front/domain/entities/AgentEntity.dart';
 import 'package:kapetanioswebapp_front/domain/entities/ResponseEntity.dart';
 import 'package:kapetanioswebapp_front/domain/use_cases/AgenteService.dart';
+import 'package:kapetanioswebapp_front/domain/use_cases/MetricsService.dart';
 import 'package:kapetanioswebapp_front/presentation/screens/formulario.dart';
 import 'package:kapetanioswebapp_front/presentation/screens/monitor.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -21,6 +22,7 @@ class Menu extends StatefulWidget {
 class _MenuState extends State<Menu> {
   String agente = "";
   Agenteservice agenteservice = Agenteservice();
+  Metricsservice metricsservice = Metricsservice();
   List<DataRow> tablaAgentes = [];
 
   @override
