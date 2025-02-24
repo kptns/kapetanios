@@ -16,7 +16,7 @@ async def config():
     # Simplified response without parameter validation for testing
     return {
         "timestamp": datetime.datetime.now().isoformat(),
-        "polling_interval": "15",
+        "polling_interval": 20,
         "deployments": [
             {
                 "name": "kapetanios-sample-app",

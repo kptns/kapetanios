@@ -1,7 +1,7 @@
 from typing import Dict, List, Protocol
-from settings.settings import get_full_api_url
-from settings.settings import KPTNS_API_KEY
-from settings.settings import INITIAL_POLLING_INTERVAL
+from settings.vault import get_full_api_url
+from settings.vault import KPTNS_API_KEY
+from settings.vault import INITIAL_POLLING_INTERVAL
 import datetime
 import uuid
 import json
@@ -21,6 +21,7 @@ class ConfigError(Exception):
     Attributes:
         message -- explanation of the error
     """
+
     pass
 
 
@@ -34,6 +35,7 @@ class HTTPConfigFetcher(ConfigFetcher):
     Concrete implementation of ConfigFetcher that performs HTTP requests
     to obtain configuration data.
     """
+
     def fetch_config(self, params: Dict = {"key": "value"}) -> Dict:
         """
         Fetches configuration through an HTTP request.
@@ -41,30 +43,28 @@ class HTTPConfigFetcher(ConfigFetcher):
         Args:
             auth_token (str): Authentication token for the API
             params (Dict): Request parameters
-            
+
         Returns:
             Dict: Configuration data obtained from the server
-            
+
         Raises:
             ConfigError: If there is an error fetching the configuration
         """
         try:
             headers = {
                 "Authorization": f"Bearer {KPTNS_API_KEY}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             }
-            
+
             response = requests.get(
-                get_full_api_url("config"),
-                headers=headers,
-                params=params
+                get_full_api_url("config"), headers=headers, params=params
             )
-            
+
             if response.status_code != 200:
                 raise ConfigError(f"Server returned status code {response.status_code}")
 
             return response.json()
-            
+
         except requests.exceptions.RequestException as e:
             raise ConfigError(f"HTTP request failed: {str(e)}")
         except json.JSONDecodeError as e:
@@ -73,15 +73,15 @@ class HTTPConfigFetcher(ConfigFetcher):
 
 class Deployment:
     def __init__(
-        self, 
-        name: str, 
-        model: str, 
-        status: bool, 
-        min_replicas: int, 
-        max_replicas: int, 
+        self,
+        name: str,
+        model: str,
+        status: bool,
+        min_replicas: int,
+        max_replicas: int,
         hpa_enabled: bool,
         hpa_name: str,
-        target_spec_name: str
+        target_spec_name: str,
     ):
         self.name = name
         self.model = model
@@ -97,11 +97,12 @@ class ConfigData:
     """
     Represents the configuration data from the server.
     """
+
     def __init__(
         self,
         timestamp: str = None,
         polling_interval: int = None,
-        deployments: List[Deployment] = list()
+        deployments: List[Deployment] = list(),
     ):
         self.timestamp: str = timestamp
         self.polling_interval: int = polling_interval
@@ -113,25 +114,31 @@ class ConfigDeserializer:
     def deserialize_metadata(config: Dict) -> ConfigData:
         """
         Deserializes the metadata from the config json
-        
+
         Args:
             config (Dict): The config json
-            
+
         Returns:
             ConfigData: The deserialized config data
-            
+
         Raises:
             ConfigError: If there is an error deserializing the config data
         """
         try:
             if not isinstance(config, dict):
-                raise ConfigError("Config is not a dict. It should be a dict of a config.")
-            
+                raise ConfigError(
+                    "Config is not a dict. It should be a dict of a config."
+                )
+
             if not isinstance(config["deployments"], list):
-                raise ConfigError("Deployments is not a list. It should be a list of deployments.")
+                raise ConfigError(
+                    "Deployments is not a list. It should be a list of deployments."
+                )
 
             if not isinstance(int(config["polling_interval"]), int):
-                raise ConfigError("Polling interval is not an int. It should be an int.")
+                raise ConfigError(
+                    "Polling interval is not an int. It should be an int."
+                )
 
             if not isinstance(config["timestamp"], str):
                 raise ConfigError("Timestamp is not a str. It should be a str.")
@@ -142,7 +149,7 @@ class ConfigDeserializer:
                 deployments=[
                     ConfigDeserializer.deserialize_deployments(deployment)
                     for deployment in config["deployments"]
-                ]
+                ],
             )
 
         except Exception as e:
@@ -152,7 +159,9 @@ class ConfigDeserializer:
     def deserialize_deployments(deployment: Dict) -> Deployment:
         """Deserializes a single deployment from the config json"""
         if not isinstance(deployment, dict):
-            raise ConfigError("Deployment is not a dict. It should be a dict of a deployment.")
+            raise ConfigError(
+                "Deployment is not a dict. It should be a dict of a deployment."
+            )
 
         return Deployment(
             name=deployment["name"],
@@ -162,21 +171,19 @@ class ConfigDeserializer:
             max_replicas=deployment["status"]["max_replicas"],
             hpa_enabled=deployment["status"]["hpa"]["available"],
             hpa_name=deployment["status"]["hpa"]["hpa_name"],
-            target_spec_name=deployment["status"]["hpa"]["target_spec_name"]
+            target_spec_name=deployment["status"]["hpa"]["target_spec_name"],
         )
 
 
 class ConfigManager:
     """
     Manages configuration data retrieval and processing from the server.
-    
+
     Attributes:
         config_queue (Dict[str, Any]): Configuration data retrieved from server into a queue
     """
-    def __init__(
-        self, 
-        queue
-    ):
+
+    def __init__(self, queue):
         self.client = HTTPConfigFetcher()
         self.fetched_config = dict()
         self.logger = logging.getLogger(__name__)
@@ -197,9 +204,12 @@ class ConfigManager:
                 self.__pipeline_run()
 
                 print(
-                    "[CONFIG] Metadata timestamp: ", self.metadata.timestamp,
-                    "\n[CONFIG] Polling interval: ", self.metadata.polling_interval,
-                    "\n[CONFIG] A Deployment sample: ", self.metadata.deployments[0].name
+                    "[CONFIG] Metadata timestamp: ",
+                    self.metadata.timestamp,
+                    "\n[CONFIG] Polling interval: ",
+                    self.metadata.polling_interval,
+                    "\n[CONFIG] A Deployment sample: ",
+                    self.metadata.deployments[0].name,
                 )
 
                 # Put the metadata into the queue
@@ -217,7 +227,7 @@ class ConfigManager:
     def stop(self):
         """Safely stops the main cycle"""
         self.running = False
-        
+
     def __pipeline_run(self):
         """Executes a complete configuration processing pipeline"""
         try:
@@ -232,23 +242,25 @@ class ConfigManager:
         try:
             if not self.fetched_config:
                 raise ConfigError("No configuration data to process")
-                
+
             if not isinstance(self.fetched_config, dict):
                 raise ConfigError(f"Expected dict, got {type(self.fetched_config)}")
-                
-            self.metadata = ConfigDeserializer.deserialize_metadata(config=self.fetched_config)
-            
+
+            self.metadata = ConfigDeserializer.deserialize_metadata(
+                config=self.fetched_config
+            )
+
             # Validate critical fields
             if not self.metadata.deployments:
                 self.logger.warning("No deployments found in configuration")
-                
+
             if self.metadata.polling_interval < 10:
                 self.logger.warning("Polling interval is very low (<10s)")
 
         except Exception as e:
             self.logger.error(f"Error unserializing fetched config of metadata: {e}")
             raise ConfigError(f"Failed to unserialize fetched config of metadata: {e}")
-        
+
     def __fetch_config(self):
         """
         Gets the config data from the server.
@@ -261,10 +273,12 @@ class ConfigManager:
         """
         max_retries = 3
         retry_delay = 5  # seconds
-        
+
         for attempt in range(max_retries):
             try:
-                self.logger.info(f"Fetching config data from server (attempt {attempt + 1}/{max_retries})")
+                self.logger.info(
+                    f"Fetching config data from server (attempt {attempt + 1}/{max_retries})"
+                )
 
                 self.fetched_config = self.client.fetch_config()
 
@@ -274,8 +288,12 @@ class ConfigManager:
 
             except ConfigError as e:
                 if attempt == max_retries - 1:
-                    raise ConfigError(f"Failed to fetch config data after {max_retries} attempts: {e}")
+                    raise ConfigError(
+                        f"Failed to fetch config data after {max_retries} attempts: {e}"
+                    )
 
-                self.logger.warning(f"Attempt {attempt + 1} failed, retrying in {retry_delay}s: {e}")
+                self.logger.warning(
+                    f"Attempt {attempt + 1} failed, retrying in {retry_delay}s: {e}"
+                )
 
                 time.sleep(retry_delay)
