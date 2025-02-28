@@ -16,17 +16,20 @@ async def config():
     # Simplified response without parameter validation for testing
     return {
         "timestamp": datetime.datetime.now().isoformat(),
-        "polling_interval": 20,
+        "polling_interval": 5,
         "deployments": [
             {
                 "name": "kapetanios-sample-app",
+                "namespace": "default",
                 "model": f"kptns-sample-app-",
                 "status": {
-                    "enabled": "true",
+                    "enabled": True,
                     "min_replicas": 1,
                     "max_replicas": 3,
+                    "cpu_usage_threshold": 0.85,
+                    "memory_usage_threshold": 0.85,
                     "hpa": {
-                        "available": "true",
+                        "available": True,
                         "hpa_name": "sample-hpa",
                         "target_spec_name": "kptns-other-app-1736220219"
                     }
@@ -34,13 +37,16 @@ async def config():
             },
             {
                 "name": "other-app",
+                "namespace": "default",
                 "model": "kptns-other-app-1736220345",
                 "status": {
-                    "enabled": "false",
+                    "enabled": True,
                     "min_replicas": 1,
                     "max_replicas": 3,
+                    "cpu_usage_threshold": 0.85,
+                    "memory_usage_threshold": 0.85,
                     "hpa": {
-                        "available": "true",
+                        "available": True,
                         "hpa_name": "other-hpa",
                         "target_spec_name": "kptns-other-app-<timestamp>"
                     }

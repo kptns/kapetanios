@@ -51,7 +51,11 @@ RETRY_DELAY = int(os.getenv('RETRY_DELAY', 1))  # seconds
 INITIAL_POLLING_INTERVAL = int(os.getenv('CONFIG_MANAGER_POLLING_INTERVAL', 10))  # seconds
 
 # Agent values
-AGENT_TIME_INTERVAL = int(os.getenv('AGENT_POLLING_INTERVAL', 20))  # seconds
+AGENT_TIME_INTERVAL = int(os.getenv('AGENT_POLLING_INTERVAL', 5))  # seconds
+
+# ML model base url
+ML_MODEL_API_BASE_URL = "http://localhost:8000"
+PREDICTIONS_ENDPOINT = "/predictions"
 
 
 def get_full_api_url(endpoint: str) -> str:

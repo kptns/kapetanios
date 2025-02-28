@@ -2,6 +2,7 @@ from typing import Dict, List, Protocol
 from settings.vault import get_full_api_url
 from settings.vault import KPTNS_API_KEY
 from settings.vault import INITIAL_POLLING_INTERVAL
+from models.kubernetes import Deployment
 import datetime
 import uuid
 import json
@@ -71,28 +72,6 @@ class HTTPConfigFetcher(ConfigFetcher):
             raise ConfigError(f"Failed to parse server response: {str(e)}")
 
 
-class Deployment:
-    def __init__(
-        self,
-        name: str,
-        model: str,
-        status: bool,
-        min_replicas: int,
-        max_replicas: int,
-        hpa_enabled: bool,
-        hpa_name: str,
-        target_spec_name: str,
-    ):
-        self.name = name
-        self.model = model
-        self.status = status
-        self.min_replicas = min_replicas
-        self.max_replicas = max_replicas
-        self.hpa_enabled = hpa_enabled
-        self.hpa_name = hpa_name
-        self.target_spec_name = target_spec_name
-
-
 class ConfigData:
     """
     Represents the configuration data from the server.
@@ -142,6 +121,46 @@ class ConfigDeserializer:
 
             if not isinstance(config["timestamp"], str):
                 raise ConfigError("Timestamp is not a str. It should be a str.")
+            
+            for deployment in config["deployments"]:
+                if not isinstance(deployment["name"], str):
+                    raise ConfigError("Deployment name is not a str. It should be a str.")
+                
+                if not isinstance(deployment["namespace"], str):
+                    raise ConfigError("Deployment namespace is not a str. It should be a str.")
+                
+                if not isinstance(deployment["model"], str):
+                    raise ConfigError("Deployment model is not a str. It should be a str.")
+            
+                if not isinstance(deployment["status"], dict):
+                    raise ConfigError("Deployment status is not a dict. It should be a dict.")
+                
+                if not isinstance(deployment["status"]["enabled"], bool):
+                    raise ConfigError("Deployment status is not a bool. It should be a bool.")
+                
+                if not isinstance(deployment["status"]["min_replicas"], int):
+                    raise ConfigError("Deployment min replicas is not an int. It should be an int.")
+                
+                if not isinstance(deployment["status"]["max_replicas"], int):
+                    raise ConfigError("Deployment max replicas is not an int. It should be an int.")
+                
+                if not isinstance(deployment["status"]["cpu_usage_threshold"], float):
+                    raise ConfigError("CPU usage threshold is not a float. It should be a float.")
+                
+                if not isinstance(deployment["status"]["memory_usage_threshold"], float):
+                    raise ConfigError("Memory usage threshold is not a float. It should be a float.")
+                
+                if not isinstance(deployment["status"]["hpa"], dict):
+                    raise ConfigError("HPA is not a dict. It should be a dict.")
+                
+                if not isinstance(deployment["status"]["hpa"]["available"], bool):
+                    raise ConfigError("HPA is not a bool. It should be a bool.")
+                
+                if not isinstance(deployment["status"]["hpa"]["hpa_name"], str):
+                    raise ConfigError("HPA name is not a str. It should be a str.")
+                
+                if not isinstance(deployment["status"]["hpa"]["target_spec_name"], str):
+                    raise ConfigError("Target spec name is not a str. It should be a str.")
 
             return ConfigData(
                 timestamp=config["timestamp"],
@@ -165,10 +184,13 @@ class ConfigDeserializer:
 
         return Deployment(
             name=deployment["name"],
+            namespace=deployment["namespace"],
             model=deployment["model"],
             status=deployment["status"]["enabled"],
             min_replicas=deployment["status"]["min_replicas"],
             max_replicas=deployment["status"]["max_replicas"],
+            cpu_usage_threshold=deployment["status"]["cpu_usage_threshold"],
+            memory_usage_threshold=deployment["status"]["memory_usage_threshold"],
             hpa_enabled=deployment["status"]["hpa"]["available"],
             hpa_name=deployment["status"]["hpa"]["hpa_name"],
             target_spec_name=deployment["status"]["hpa"]["target_spec_name"],
@@ -202,15 +224,6 @@ class ConfigManager:
 
                 # Run the pipeline
                 self.__pipeline_run()
-
-                print(
-                    "[CONFIG] Metadata timestamp: ",
-                    self.metadata.timestamp,
-                    "\n[CONFIG] Polling interval: ",
-                    self.metadata.polling_interval,
-                    "\n[CONFIG] A Deployment sample: ",
-                    self.metadata.deployments[0].name,
-                )
 
                 # Put the metadata into the queue
                 self.queue.put(self.metadata)
@@ -252,7 +265,7 @@ class ConfigManager:
 
             # Validate critical fields
             if not self.metadata.deployments:
-                self.logger.warning("No deployments found in configuration")
+                self.logger.info("No deployments found in configuration")
 
             if self.metadata.polling_interval < 10:
                 self.logger.warning("Polling interval is very low (<10s)")

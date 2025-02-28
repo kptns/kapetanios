@@ -6,11 +6,13 @@
             "name": "kapetanios-sample-app",
             "model": "kptns-sample-app-<timestamp>",
             "status": {
-                "enabled": "true",
+                "enabled": true,
                 "min_replicas": 1,
                 "max_replicas": 3,
+                "cpu_usage_threshold": 0.85,
+                "memory_usage_threshold": 0.85,
                 "hpa": {
-                    "available": "true",
+                    "available": true,
                     "hpa_name": "<hpa name here>",
                     "target_spec_name": "kptns-other-app-<timestamp>"
                 }
@@ -23,8 +25,10 @@
                 "enabled": "false",
                 "min_replicas": 1,
                 "max_replicas": 3,
+                "cpu_usage_threshold": 0.85,
+                "memory_usage_threshold": 0.85,
                 "hpa": {
-                    "available": "true",
+                    "available": true,
                     "hpa_name": "<hpa name here>",
                     "target_spec_name": "kptns-other-app-<timestamp>"
                 }
