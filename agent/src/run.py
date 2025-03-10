@@ -1,7 +1,6 @@
 from multiprocessing import Queue
-import logging
 from config.manager import ConfigManager
-from agent import Agent
+from agent.main import Agent
 import time
 import sys
 from utils.process import start_single_process
@@ -9,12 +8,10 @@ from typing import List
 import multiprocessing
 import platform
 
-logger = logging.getLogger(__name__)
-
 
 def run_queues(instances: List[object]) -> List[Queue]:
     """
-    Creates a queue for each process.
+    Creates a queue ççfor each process.
     """
     queues = list()
     for _ in range(len(instances)):
@@ -31,7 +28,7 @@ def run_processes(instances: List[object]) -> List[object]:
     Returns:
         List[object]: Lista de procesos iniciados
     """
-    
+
     # Create queues
     queues = run_queues(instances)
 
@@ -84,7 +81,6 @@ def main():
             time.sleep(1)
 
     except KeyboardInterrupt:
-        logger.info("Shutting down processes...")
         shutdown_processes(processes)
         sys.exit(1)
 

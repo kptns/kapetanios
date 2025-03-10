@@ -1,5 +1,5 @@
 from typing import Dict, List, Union
-from settings.vault import ML_MODEL_API_BASE_URL, PREDICTIONS_ENDPOINT
+from settings.vault import MODEL_API_URL, PREDICTIONS_ENDPOINT
 
 import requests
 import json
@@ -14,7 +14,7 @@ class ModelResponseError(Exception):
         super().__init__(self.message)
 
 
-class BrainModel:
+class Predictor:
     def __init__(self):
         pass
     
@@ -35,10 +35,10 @@ class BrainModel:
         -   bool: will return True if the response is valid
         Raises:
         -   ModelResponseError: if the response format is invalid
-        """
+        """   
         if not isinstance(data, dict):
             raise ModelResponseError(
-                message="Wrong data type of the response body. Needs to be a dictionary."
+                message=f"Wrong data type of the response body. Got {type(data)}, needs to be a dictionary."
             )
         
         if "predictions" not in data:
@@ -98,10 +98,20 @@ class BrainModel:
         -   ModelResponseError: if some error raises from the API, will be raise an error.
         """
         try:
-            response = requests.post(url=ML_MODEL_API_BASE_URL+PREDICTIONS_ENDPOINT, data=data)
+            response = requests.post(
+                url=MODEL_API_URL+PREDICTIONS_ENDPOINT,
+                json=data
+            )
             
             if response.status_code == 200:
-                predictions = json.loads(response.content)
+                # First deserialization
+                first_decode = json.loads(response.content)
+                
+                # Second deserialization
+                if isinstance(first_decode, str):
+                    predictions = json.loads(first_decode)
+                else:
+                    predictions = first_decode
 
                 if self.response_validation(predictions):
                     return predictions

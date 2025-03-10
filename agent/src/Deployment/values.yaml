@@ -1,0 +1,23 @@
+# Default values for kapetanios-agent
+image:
+  repository: registry.digitalocean.com/fmoq-aks-repo/kapetanios-agent
+  tag: latest
+  pullPolicy: Always
+
+# Recursos para el pod
+resources:
+  requests:
+    cpu: 150m
+    memory: 200Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}

@@ -22,7 +22,6 @@ class ConfigError(Exception):
     Attributes:
         message -- explanation of the error
     """
-
     pass
 
 
@@ -229,7 +228,7 @@ class ConfigManager:
                 self.queue.put(self.metadata)
 
             except Exception as e:
-                self.logger.error(f"Error in configuration cycle: {e}")
+                self.logger.error(f"[CONFIG] Error in configuration cycle: {e}")
 
             # Sleep for the polling interval
             if self.metadata is not None:
@@ -247,7 +246,7 @@ class ConfigManager:
             if self.__fetch_config():
                 self.__set_metadata()
         except Exception as e:
-            self.logger.error(f"Error in configuration cycle: {e}")
+            self.logger.error(f"[CONFIG] Error in configuration cycle: {e}")
             raise ConfigError(f"Failed to process configuration cycle: {e}")
 
     def __set_metadata(self):
@@ -265,13 +264,13 @@ class ConfigManager:
 
             # Validate critical fields
             if not self.metadata.deployments:
-                self.logger.info("No deployments found in configuration")
+                self.logger.info("[CONFIG] No deployments found in configuration")
 
             if self.metadata.polling_interval < 10:
-                self.logger.warning("Polling interval is very low (<10s)")
+                self.logger.warning("[CONFIG] Polling interval is very low (<10s)")
 
         except Exception as e:
-            self.logger.error(f"Error unserializing fetched config of metadata: {e}")
+            self.logger.error(f"[CONFIG] Error unserializing fetched config of metadata: {e}")
             raise ConfigError(f"Failed to unserialize fetched config of metadata: {e}")
 
     def __fetch_config(self):
@@ -290,7 +289,7 @@ class ConfigManager:
         for attempt in range(max_retries):
             try:
                 self.logger.info(
-                    f"Fetching config data from server (attempt {attempt + 1}/{max_retries})"
+                    f"[CONFIG] Fetching config data from server (attempt {attempt + 1}/{max_retries})"
                 )
 
                 self.fetched_config = self.client.fetch_config()
@@ -302,11 +301,11 @@ class ConfigManager:
             except ConfigError as e:
                 if attempt == max_retries - 1:
                     raise ConfigError(
-                        f"Failed to fetch config data after {max_retries} attempts: {e}"
+                        f"[CONFIG] Failed to fetch config data after {max_retries} attempts: {e}"
                     )
 
                 self.logger.warning(
-                    f"Attempt {attempt + 1} failed, retrying in {retry_delay}s: {e}"
+                    f"[CONFIG] Attempt {attempt + 1} failed, retrying in {retry_delay}s: {e}"
                 )
 
                 time.sleep(retry_delay)

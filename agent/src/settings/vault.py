@@ -1,15 +1,39 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+
+def read_configmap_value(key: str, default_value: str = None) -> str:
+    """
+    Reads a value from Kubernetes ConfigMap if available,
+    otherwise falls back to environment variables or default value.
+
+    Args:
+        key (str): The key to look up in the ConfigMap or environment variables
+        default_value (str, optional): Default value if key is not found. Defaults to None.
+
+    Returns:
+        str: The value from ConfigMap, environment variable, or default value
+    """
+    configmap_path = os.getenv('CONFIGMAP_PATH', '/etc/config')
+    config_file = Path(configmap_path) / key
+    
+    if config_file.exists():
+        return config_file.read_text().strip()
+    return os.getenv(key, default_value)
+
+
+def get_full_api_url(endpoint: str) -> str:
+    """
+    Builds the complete URL for a specific endpoint
+    """
+    return f"{KAPETANIOS_SERVER_URL.rstrip('/')}{API_ENDPOINTS[endpoint]}"
+
 
 # Base directories
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # URLs and API
-BASE_URL = os.getenv('BASE_URL', 'http://127.0.0.1:8000')
+KAPETANIOS_SERVER_URL = os.getenv('KAPETANIOS_SERVER_URL', 'http://127.0.0.1:8000')
 API_VERSION = 'v1'
 API_TIMEOUT = int(os.getenv('API_TIMEOUT', 30))  # seconds
 
@@ -53,13 +77,11 @@ INITIAL_POLLING_INTERVAL = int(os.getenv('CONFIG_MANAGER_POLLING_INTERVAL', 10))
 # Agent values
 AGENT_TIME_INTERVAL = int(os.getenv('AGENT_POLLING_INTERVAL', 5))  # seconds
 
+# Prometheus properties
+PROMETHEUS_URL = read_configmap_value('PROMETHEUS_URL', 'http://164.90.255.142:9090')
+PROMETHEUS_METRICS_USAGE_TIME = int(read_configmap_value('PROMETHEUS_METRICS_USAGE_TIME', '600'))
+PROMETHEUS_METRICS_USAGE_RESOLUTION = int(read_configmap_value('PROMETHEUS_METRICS_USAGE_RESOLUTION', '20'))
+
 # ML model base url
-ML_MODEL_API_BASE_URL = "http://localhost:8000"
-PREDICTIONS_ENDPOINT = "/predictions"
-
-
-def get_full_api_url(endpoint: str) -> str:
-    """
-    Builds the complete URL for a specific endpoint
-    """
-    return f"{BASE_URL.rstrip('/')}{API_ENDPOINTS[endpoint]}"
+MODEL_API_URL = read_configmap_value("MODEL_API_URL", "http://localhost:8000")
+PREDICTIONS_ENDPOINT = "/predict"
