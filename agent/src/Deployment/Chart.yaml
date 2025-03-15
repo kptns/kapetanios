@@ -1,6 +1,0 @@
-apiVersion: v2
-name: kapetanios-agent
-description: A Helm chart for Kapetanios Agent deployment on Kubernetes
-type: application
-version: 0.1.1
-appVersion: "1.0.0"
