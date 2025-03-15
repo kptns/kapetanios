@@ -222,7 +222,7 @@ class ConfigManager:
                     self.queue.get()
 
                 # Run the pipeline
-                self.__pipeline_run()
+                self._pipeline_run()
 
                 # Put the metadata into the queue
                 self.queue.put(self.metadata)
@@ -240,7 +240,7 @@ class ConfigManager:
         """Safely stops the main cycle"""
         self.running = False
 
-    def __pipeline_run(self):
+    def _pipeline_run(self):
         """Executes a complete configuration processing pipeline"""
         try:
             if self.__fetch_config():

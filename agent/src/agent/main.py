@@ -32,10 +32,12 @@ class Agent:
         # Modules
         self.prometheus = prometheus
         self.predictor = predictor
+        
+        # Logs
+        self.logger = logger.init()
 
         try:
             self.kube_client = KubeClient()
-            self.logger = logger.init()
         except Exception as e:
             self.logger.error("[AGENT] Failed to initialize the Kube Client: ", e)
         
@@ -76,10 +78,10 @@ class Agent:
             )
             
             # Apply changes if needed
-            # self._apply_scaling(
-            #     current_replicas=cluster_state['current_replicas'],
-            #     new_replicas=new_replica_count
-            # )
+            self._apply_scaling(
+                current_replicas=cluster_state['current_replicas'],
+                new_replicas=new_replica_count
+            )
 
             self._log_pipeline_state(cluster_state, predictions, new_replica_count)
 
@@ -88,27 +90,42 @@ class Agent:
 
     def _update_config(self):
         """Updates configuration if new config is available"""
-        if not self.config_queue.empty():
-            self.config = self.config_queue.get()
+        if self.config is None:
+            while self.config is None:
+                self.logger.info("[AGENT] Getting lastest configuration at startup.")
+                if not self.config_queue.empty():
+                    self.config = self.config_queue.get()
+                    self.logger.info("[AGENT] Lastest configuration set.")
+                time.sleep(1)
+    
+        else:
+            if not self.config_queue.empty():
+                self.config = self.config_queue.get()
+                self.logger.info("[AGENT] Lastest configuration set.")
 
     def _get_cluster_state(self):
         """Retrieves current state from the cluster"""
         deployment = self.config.deployments[0]
 
-        return {
-            'cpu_requests_limit': self.kube_client.get_deployment_cpu_requests(
-                name=deployment.name,
-                namespace=deployment.namespace
-            ),
-            'memory_requests_limit': self.kube_client.get_deployment_memory_requests(
-                name=deployment.name,
-                namespace=deployment.namespace
-            ),
-            'current_replicas': self.kube_client.get_deployment_replicas(
-                name=deployment.name,
-                namespace=deployment.namespace
-            )
-        }
+        try:
+            state = {
+                'cpu_requests_limit': self.kube_client.get_deployment_cpu_requests(
+                    name=deployment.name,
+                    namespace=deployment.namespace
+                ),
+                'memory_requests_limit': self.kube_client.get_deployment_memory_requests(
+                    name=deployment.name,
+                    namespace=deployment.namespace
+                ),
+                'current_replicas': self.kube_client.get_deployment_replicas(
+                    name=deployment.name,
+                    namespace=deployment.namespace
+                )
+            }
+            return state
+
+        except Exception as e:
+            self.logger.error("[AGENT] An error occured trying to get the cluster state: ", e)
 
     def _get_predictions(self):
         """Gets predictions from the ML model"""
@@ -145,7 +162,7 @@ class Agent:
     def _apply_scaling(self, current_replicas, new_replicas):
         """Applies the scaling changes if needed"""
         if new_replicas != current_replicas:
-            deployment = self.config_queue.deployments[0]
+            deployment = self.config.deployments[0]
             self.kube_client.set_deployment_replicas(
                 name=deployment.name,
                 namespace=deployment.namespace,

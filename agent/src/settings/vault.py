@@ -83,5 +83,6 @@ PROMETHEUS_METRICS_USAGE_TIME = int(read_configmap_value('PROMETHEUS_METRICS_USA
 PROMETHEUS_METRICS_USAGE_RESOLUTION = int(read_configmap_value('PROMETHEUS_METRICS_USAGE_RESOLUTION', '20'))
 
 # ML model base url
-MODEL_API_URL = read_configmap_value("MODEL_API_URL", "http://localhost:8000")
+MODEL_API_URL = read_configmap_value("MODEL_API_URL", "http://localhost:8080")
 PREDICTIONS_ENDPOINT = "/predict"
+ML_MODEL_TIMEOUT = 10

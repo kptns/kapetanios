@@ -23,7 +23,7 @@ class KubeAuth:
             True if the config is loaded successfully, False otherwise.
         """
         try:
-            config.load_kube_config()
+            config.load_incluster_config()
             return True
 
         except Exception as e:

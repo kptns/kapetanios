@@ -1,5 +1,5 @@
 from typing import Dict, List, Union
-from settings.vault import MODEL_API_URL, PREDICTIONS_ENDPOINT
+from settings.vault import MODEL_API_URL, PREDICTIONS_ENDPOINT, ML_MODEL_TIMEOUT
 
 import requests
 import json
@@ -100,7 +100,8 @@ class Predictor:
         try:
             response = requests.post(
                 url=MODEL_API_URL+PREDICTIONS_ENDPOINT,
-                json=data
+                json=data,
+                timeout=10
             )
             
             if response.status_code == 200:
@@ -132,6 +133,12 @@ class Predictor:
                     status_code=response.status_code,
                     response=error_response
                 )
+            
+        except requests.Timeout:
+            raise ModelResponseError(
+                message=f"Request exceeded the time of response of {ML_MODEL_TIMEOUT}s",
+                status_code=408  # Request Timeout status code
+            )
             
         except requests.RequestException as e:
             raise ModelResponseError(

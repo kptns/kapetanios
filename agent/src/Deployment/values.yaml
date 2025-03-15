@@ -4,6 +4,16 @@ image:
   tag: latest
   pullPolicy: Always
 
+# Configuración de seguridad
+securityContext:
+  capabilities:
+    add:
+      - NET_BIND_SERVICE  # Permite conexiones salientes
+
+# Network Policy configuration
+networkPolicy:
+  enabled: true
+
 # Recursos para el pod
 resources:
   requests:
@@ -21,3 +31,7 @@ tolerations: []
 
 # Affinity
 affinity: {}
+
+# Network configuration
+network:
+  hostNetwork: false
