@@ -1,46 +1,11 @@
 from numpy import array
-from pandas import read_pickle, DataFrame, date_range, to_datetime
-from os.path import join
+from pandas import DataFrame, date_range, to_datetime
 from os import environ
-from json import dumps, loads
+from json import dumps
 from datetime import datetime
 environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow.compat.v1.logging import set_verbosity, FATAL
 set_verbosity(FATAL)
-from tensorflow.keras.models import load_model
-
-def load_models(path):
-    """
-    Loads the CPU and memory models along with their respective scalers from the specified directory.
-
-    Args:
-        path (str): The directory path where the model and scaler files are located.
-
-    Returns:
-        tuple: A tuple containing the following elements:
-            - cpu_scaler_x: The scaler for the CPU model input features.
-            - cpu_scaler_y: The scaler for the CPU model output features.
-            - cpu_model: The loaded CPU model.
-            - memory_scaler_x: The scaler for the memory model input features.
-            - memory_scaler_y: The scaler for the memory model output features.
-            - memory_model: The loaded memory model.
-
-    Raises:
-        Exception: If there is an error while loading the model artifacts, an exception is raised with the error message.
-    """
-    try:
-        make_path = lambda x: join(path, x)
-        cpu_scaler_x = read_pickle(make_path("cpu_gru_scaler_x.pkl"))
-        cpu_scaler_y = read_pickle(make_path("cpu_gru_scaler_y.pkl"))
-        cpu_model = load_model(make_path("cpu_gru.keras"))
-        memory_scaler_x = read_pickle(make_path("memory_gru_scaler_x.pkl"))
-        memory_scaler_y = read_pickle(make_path("memory_gru_scaler_y.pkl"))
-        memory_model = load_model(make_path("memory_gru.keras"))
-        return cpu_scaler_x, cpu_scaler_y, cpu_model, memory_scaler_x, memory_scaler_y, memory_model
-    except Exception as e:
-        raise Exception(
-            "An error occurred while loading model artifacts. Error: "+str(e))
-
 
 def complete_series(df: DataFrame, time_column: str, frequency: str = "h"):
     """
@@ -85,7 +50,7 @@ def qualify(timestamp, memory_data, cpu_data, cpu_scaler_x, cpu_scaler_y, cpu_mo
     try:
         memory_data = DataFrame(data=memory_data)
         memory_data["timestamp"] = to_datetime(timestamp)
-        memory_data = complete_series(memory_data, "timestamp", "20S")
+        memory_data = complete_series(memory_data, "timestamp", "20s")
         memory_data = memory_data.resample("1min").mean()
         memory_data_raw = memory_data.values
         memory_data_raw = memory_data_raw.flatten()[1:]
@@ -111,7 +76,7 @@ def qualify(timestamp, memory_data, cpu_data, cpu_scaler_x, cpu_scaler_y, cpu_mo
         cpu_data_raw = cpu_data_raw.flatten()
         cpu_data = DataFrame(cpu_data)
         cpu_data["timestamp"] = to_datetime(timestamp)
-        cpu_data = complete_series(cpu_data, "timestamp", "20S")
+        cpu_data = complete_series(cpu_data, "timestamp", "20s")
         cpu_data = cpu_data.resample("1min").mean()
         cpu_data_raw = cpu_data.values
         cpu_data_raw = cpu_data_raw.flatten()[1:]
@@ -130,7 +95,7 @@ def qualify(timestamp, memory_data, cpu_data, cpu_scaler_x, cpu_scaler_y, cpu_mo
     return memory_prediction, cpu_prediction
 
 
-def main(data):
+def main(data, cpu_scaler_x, cpu_scaler_y, cpu_model, memory_scaler_x, memory_scaler_y, memory_model):
     """
     Main function to process the input data and generate predictions for memory and CPU usage.
 
@@ -159,11 +124,6 @@ def main(data):
         timestamp = data["timestamp"]
     except Exception as e:
         return (500, datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " - Error: 'memory_usage' is not on payload")
-    try:
-        cpu_scaler_x, cpu_scaler_y, cpu_model, memory_scaler_x, memory_scaler_y, memory_model = load_models(
-            "./models/")
-    except Exception as e:
-        return (500, datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " - Error: " + str(e))
     try:
         memory_prediction, cpu_prediction = qualify(timestamp,
                                                     memory_usage, cpu_usage_total, cpu_scaler_x, cpu_scaler_y, cpu_model, memory_scaler_x, memory_scaler_y, memory_model)

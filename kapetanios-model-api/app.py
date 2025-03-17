@@ -1,6 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from qualify import main
+from os import environ
+environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+from tensorflow.compat.v1.logging import set_verbosity, FATAL
+set_verbosity(FATAL)
+from tensorflow.keras.models import load_model
+from pandas import read_pickle
+from os.path import join
+import tensorflow.keras.backend as K
+
 
 # Create the API
 app = FastAPI(
@@ -9,7 +18,40 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Define the input schema with validation
+def load_models(path):
+    """
+    Loads the CPU and memory models along with their respective scalers from the specified directory.
+
+    Args:
+        path (str): The directory path where the model and scaler files are located.
+
+    Returns:
+        tuple: A tuple containing the following elements:
+            - cpu_scaler_x: The scaler for the CPU model input features.
+            - cpu_scaler_y: The scaler for the CPU model output features.
+            - cpu_model: The loaded CPU model.
+            - memory_scaler_x: The scaler for the memory model input features.
+            - memory_scaler_y: The scaler for the memory model output features.
+            - memory_model: The loaded memory model.
+
+    Raises:
+        Exception: If there is an error while loading the model artifacts, an exception is raised with the error message.
+    """
+    try:
+        make_path = lambda x: join(path, x)
+        cpu_scaler_x = read_pickle(make_path("cpu_gru_scaler_x.pkl"))
+        cpu_scaler_y = read_pickle(make_path("cpu_gru_scaler_y.pkl"))
+        cpu_model = load_model(make_path("cpu_gru.keras"))
+        memory_scaler_x = read_pickle(make_path("memory_gru_scaler_x.pkl"))
+        memory_scaler_y = read_pickle(make_path("memory_gru_scaler_y.pkl"))
+        memory_model = load_model(make_path("memory_gru.keras"))
+        return cpu_scaler_x, cpu_scaler_y, cpu_model, memory_scaler_x, memory_scaler_y, memory_model
+    except Exception as e:
+        raise Exception(
+            "An error occurred while loading model artifacts. Error: "+str(e))
+
+K.clear_session()
+cpu_scaler_x, cpu_scaler_y, cpu_model, memory_scaler_x, memory_scaler_y, memory_model = load_models("models")
 
 
 class InputData(BaseModel):
@@ -92,7 +134,7 @@ def predict(data: InputData):
         "cpu_usage_total": data.cpu_usage_total
     }
 
-    status, response = main(input_dict)
+    status, response = main(input_dict, cpu_scaler_x, cpu_scaler_y, cpu_model, memory_scaler_x, memory_scaler_y, memory_model)
 
     if status == 200:
         return response

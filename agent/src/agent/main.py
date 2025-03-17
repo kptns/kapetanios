@@ -140,7 +140,7 @@ class Agent:
             current_replicas=cluster_state['current_replicas'],
             predicted_value=predictions["predictions"]["cpu_usage_total"],
             cpu_requests_limit=cluster_state['cpu_requests_limit'],
-            threshold=0.85,
+            threshold=deployment.cpu_usage_threshold,
             max_replica=deployment.max_replicas,
             min_replica=deployment.min_replicas
         )
@@ -149,7 +149,7 @@ class Agent:
             current_replicas=cluster_state['current_replicas'],
             predicted_value=predictions["predictions"]["memory_usage"],
             memory_requests_limit=cluster_state['memory_requests_limit'],
-            threshold=0.85,
+            threshold=deployment.memory_usage_threshold,
             max_replica=deployment.max_replicas,
             min_replica=deployment.min_replicas
         )
