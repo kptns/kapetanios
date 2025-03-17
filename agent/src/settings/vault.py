@@ -86,3 +86,6 @@ PROMETHEUS_METRICS_USAGE_RESOLUTION = int(read_configmap_value('PROMETHEUS_METRI
 MODEL_API_URL = read_configmap_value("MODEL_API_URL", "http://localhost:8080")
 PREDICTIONS_ENDPOINT = "/predict"
 ML_MODEL_TIMEOUT = 10
+
+# Event notification manager
+EVENT_NOTIFICATION_ENDPOINT = "/event"

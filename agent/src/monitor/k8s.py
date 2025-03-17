@@ -1,7 +1,11 @@
-from kubernetes import client
-from kubernetes import config
+# Python tools
 from pprint import pprint
 from datetime import datetime
+# Kubernetes lib
+from kubernetes import client
+from kubernetes import config
+from kubernetes.config.config_exception import ConfigException
+# Modules
 from models.kubernetes import Deployment
 
 
@@ -15,7 +19,7 @@ class KubeAuth:
     def __init__(self):
         self.api_client = None
 
-    def __is_kube_config_loaded(self):
+    def __is_kube_config_loaded(self) -> bool:
         """
         Loads the kube config from the default location.
         
@@ -26,8 +30,13 @@ class KubeAuth:
             config.load_incluster_config()
             return True
 
-        except Exception as e:
-            raise KubeClientError(f"Error loading kube config: {e}")
+        except ConfigException as e:
+            try:
+                config.load_config()
+                return True
+
+            except ConfigException as e2:
+                raise KubeClientError(f"Error trying to load any kubernetes config: in-cluster error: {e}, kubeconfig error: {e2}")
 
     def create_client(self):
         """
@@ -62,13 +71,6 @@ class KubeClient:
                 self.apps_v1 = client.AppsV1Api()
         except Exception as e:
             raise KubeClientError(f"Error creating kube client: {e}")
-
-
-    def get_deployment_cpu_usage(self, deployment_name: str):
-        pass
-
-    def get_deployment_memory_usage(self, deployment_name: str):
-        pass
 
     def get_deployment_replicas(self, name: str, namespace: str):
         """
