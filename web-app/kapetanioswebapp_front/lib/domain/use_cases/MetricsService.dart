@@ -23,8 +23,8 @@ class Metricsservice {
       if(response.getSuccess == false){
         return metrics;
       }
-
-      metrics = MetricAux.fromMap((response).getData);
+      List datos = (response).getData;
+      metrics = MetricAux(x: int.parse((datos[0]*1000).toString()), y: double.parse(datos[1].toString()));
 
       return metrics;
       

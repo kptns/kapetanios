@@ -15,6 +15,8 @@ class Monitor extends StatefulWidget {
 }
 
 class _MonitorState extends State<Monitor> {
+  List<String> list = <String>['1s', '5s', '10s', '20s'];
+  String dropdownValue = "1s";
 
   @override
   Widget build(BuildContext context) {
@@ -94,21 +96,21 @@ class _MonitorState extends State<Monitor> {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   DropdownButton<String>(
-   items: ["Handball", "Volleyball", "Football", "Badminton"].map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              
-                alignment: Alignment.bottomRight,
-                borderRadius: BorderRadius.circular(15),
-                
-                underline: SizedBox(),
-              onChanged: (value) {
-                
-              },
-)
+                    value: dropdownValue,
+                    icon: const Icon(Icons.arrow_downward),
+                    elevation: 16,
+                    style: const TextStyle(color: Colors.deepPurple),
+                    onChanged: (String? value) {
+                      // This is called when the user selects an item.
+                      setState(() {
+                        dropdownValue = value!;
+                      });
+                    },
+                    items:
+                        list.map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(value: value, child: Text(value));
+                        }).toList(),
+                  )
                 ],
               ),
             ),
@@ -116,26 +118,7 @@ class _MonitorState extends State<Monitor> {
               child: ListView(
                 children: [
                   Row(
-                    children: [
-                      Expanded(child: LineChart(
-                          titulo: 'Replicas disponibles y no disponibles',
-                          legendsName: [
-                            "Replicas disponibles", "Replicas no disponibles", "Replicas esperadas"
-                          ],
-                          ruta: "pods",
-                        )
-                      ),
-                      Expanded(child: LineChart(
-                          titulo: 'Replicas actualizadas y vencidas',
-                          legendsName: [
-                            "Replicas disponibles", "Replicas no disponibles", "Replicas esperadas"
-                          ],
-                          ruta: "rxbytes",
-                        )
-                      ),
-                    ],
-                  ),
-                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Expanded(child: LineChart(
                           titulo: 'CPU Solicitado, Limite y Usado',
@@ -143,16 +126,18 @@ class _MonitorState extends State<Monitor> {
                             "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
                           ],
                           ruta: "cpu",
-                        )
+                          intervalo: dropdownValue
+                        ),
                       ),
                       Expanded(child: LineChart(
-                          titulo: 'Memoria Solicitada, Limite y Usado',
+                          titulo: 'CPU Solicitado, Limite y Usado',
                           legendsName: [
-                            "Memoria usada", "Memoria limite", "Memoria solicitada"
+                            "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
                           ],
                           ruta: "memory",
+                          intervalo: dropdownValue
                         )
-                      ),
+                      )
                     ],
                   ),
                   Row(
@@ -162,7 +147,17 @@ class _MonitorState extends State<Monitor> {
                           legendsName: [
                             "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
                           ],
-                          ruta: "cpu",
+                          ruta: "rxbytes",
+                          intervalo: dropdownValue
+                        )
+                      ),
+                      Expanded(child: LineChart(
+                          titulo: 'CPU Solicitado, Limite y Usado',
+                          legendsName: [
+                            "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
+                          ],
+                          ruta: "txbytes",
+                          intervalo: dropdownValue
                         )
                       ),
                     ],

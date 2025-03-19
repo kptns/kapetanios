@@ -9,41 +9,48 @@ class LineChart extends StatefulWidget {
   final String titulo;
   final List<String> legendsName;
   final String ruta;
+  final String intervalo;
 
   const LineChart({
     Key? key,
     required this.titulo,
     required this.legendsName,
     required this.ruta,
+    required this.intervalo
   }) : super(key: key);
 
   @override
   State<LineChart> createState() => _LineChartState();
 }
 
-class _LineChartState extends State<LineChart> {
+class _LineChartState extends State<LineChart> with AutomaticKeepAliveClientMixin{
   late Metricsservice metricsservice;
   List<MetricAux> _chartData = [];
   ChartSeriesController? _chartSeriesController;
   Timer? _timer;
   final int _visibleDuration = 60;
+  @override
+  bool get wantKeepAlive => true; 
+  int intervalo = 1;
 
   @override
   void initState() {
     super.initState();
     metricsservice = Metricsservice();
+    intervalo = int.parse(widget.intervalo.replaceAll("s", ""));
     // Inicializa el temporizador en initState
     _timer = Timer.periodic(
-      const Duration(seconds: 1),
+      Duration(seconds: intervalo),
       _updateDataSource,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     DateTime now = DateTime.now();
     DateTime startTime = _chartData.length > 0 ? DateTime.fromMillisecondsSinceEpoch( _chartData.first.x as int) : now.subtract(Duration(seconds: 1));
-
+    
     return Padding(
       padding: const EdgeInsets.all(15.0),
       child: Column(
@@ -71,10 +78,6 @@ class _LineChartState extends State<LineChart> {
               minimum: startTime,
               maximum: now,
             ),
-            // primaryXAxis: NumericAxis(
-            //   majorGridLines: const MajorGridLines(width: 0),
-            //   title: AxisTitle(text: "Tiempo (m)"),
-            // ),
             legend: Legend(
               isVisible: true,
               position: LegendPosition.bottom,
@@ -88,7 +91,7 @@ class _LineChartState extends State<LineChart> {
             series: <AreaSeries<MetricAux, DateTime>>[
               AreaSeries<MetricAux, DateTime>(
                 dataSource: _chartData,
-                xValueMapper: (MetricAux data, _) => DateTime.fromMillisecondsSinceEpoch(((data.x! / 1000) * 1000) as int),
+                xValueMapper: (MetricAux data, _) => DateTime.fromMillisecondsSinceEpoch(data.x! as int),
                 yValueMapper: (MetricAux data, _) => data.y,
                 color: Colors.blue.withOpacity(0.5),
                 borderColor: Colors.blue,
@@ -96,8 +99,8 @@ class _LineChartState extends State<LineChart> {
                 markerSettings: MarkerSettings(
                   isVisible: true, // Mostrar marcadores
                   shape: DataMarkerType.circle, // Forma del marcador
-                  width: 10, // Ancho del marcador
-                  height: 10, // Alto del marcador
+                  width: 2, // Ancho del marcador
+                  height: 2, // Alto del marcador
                   borderWidth: 2, // Grosor del borde del marcador
                   borderColor: Colors.blue, // Color del borde del marcador
                   color: Colors.white, // Color de relleno del marcador
@@ -116,16 +119,16 @@ class _LineChartState extends State<LineChart> {
   }
 
   Future<void> _updateDataSource(Timer timer) async {
+    if(intervalo != int.parse(widget.intervalo.replaceAll("s", ""))){
+      _startTimer();
+    }
     try {
       MetricAux newData = await metricsservice.getAgents(widget.ruta);
       setState(() {
-        // if (_chartData.length > 10) {
-        //   _chartData.removeAt(0);
-        // }
         DateTime now = DateTime.now();
         _chartData.removeWhere((data) =>
-            DateTime.fromMillisecondsSinceEpoch(data.x as int)
-                .isBefore(now.subtract(Duration(seconds: _visibleDuration))));
+            DateTime.fromMillisecondsSinceEpoch(data.x! as int)
+                .isBefore(now.subtract(Duration(seconds: _visibleDuration*intervalo))));
 
         _chartSeriesController?.updateDataSource(
           addedDataIndexes: [_chartData.length - 1],
@@ -136,6 +139,14 @@ class _LineChartState extends State<LineChart> {
       // Manejo de errores
       print('Error al obtener datos: $e');
     }
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    intervalo = int.parse(widget.intervalo.replaceAll("s", ""));
+    _timer = Timer.periodic(Duration(seconds: intervalo), (timer) {
+      _updateDataSource(timer);
+    });
   }
 
   @override

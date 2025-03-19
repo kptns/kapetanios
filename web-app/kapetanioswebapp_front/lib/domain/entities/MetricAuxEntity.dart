@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 class MetricAux {
-  double? x;
+  int? x;
   double? y;
   MetricAux({
     this.x,
@@ -10,7 +10,7 @@ class MetricAux {
   });
 
   MetricAux copyWith({
-    double? x,
+    int? x,
     double? y,
   }) {
     return MetricAux(
@@ -28,7 +28,7 @@ class MetricAux {
 
   factory MetricAux.fromMap(Map<String, dynamic> map) {
     return MetricAux(
-      x: map['x'] as double,
+      x: map['x'] as int,
       y: map['y'] as double,
     );
   }

@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -36,6 +38,9 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
   void initState() {
     agente = widget.agente;
     actualizar = agente.id != "";
+    agente.hostKapetanios = "hostkpts";
+    agente.clusterName = "cluster";
+    agente.hostRegistry = "hostReg";
     super.initState();
   }
 
@@ -99,15 +104,52 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      lineYML("apiVersion", "datadoghq.com/v2alpha1", 0, 1),
-                                      lineYML("kind", "DatadogAgent", 0, 2),
-                                      lineYML("metadata", "", 0, 3),
-                                      lineYML("name", "datadog", 5, 4),
-                                      lineYML("namespace", "default", 5, 4),
-                                      lineYML("spec", "", 0, 5),
-                                      lineYML("server_host", "example.server.com", 5, 6),
-                                      lineYML("datadog_host", "agent.datadog.com", 5, 6),
-                                      lineYML("account_id", "1234567890", 5, 6),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.end,
+                                        children: [
+                                          IconButton(
+                                            iconSize: 20,
+                                            icon: const Icon(
+                                              FontAwesomeIcons.clipboard,
+                                              color: Colors.white,
+                                            ),
+                                            // the method which is called
+                                            // when button is pressed
+                                            onPressed: () async {
+                                              await Clipboard.setData(ClipboardData(text: """
+apiVersion: "datadoghq.com/v2alpha1"
+kind: "${agente.hostKapetanios}"
+metadata:
+  name: "${agente.clusterName}"
+  namespace: "${agente.hostRegistry}"
+spec:
+  server_host: "server_host"
+  datadog_host: "agent.datadog.com"
+  account_id: "1234567890"
+"""));
+                                              
+                                              // Mostrar feedback al usuario
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text('Yml copiado.'),
+                                                    duration: Duration(seconds: 1),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      lineYML("apiVersion", "datadoghq.com/v2alpha1", 0),
+                                      lineYML("kind", agente.hostKapetanios, 0),
+                                      lineYML("metadata", "", 0),
+                                      lineYML("name", agente.clusterName, 1),
+                                      lineYML("namespace", agente.hostRegistry, 1),
+                                      lineYML("spec", "", 0),
+                                      lineYML("server_host", "example.server.com", 1),
+                                      lineYML("datadog_host", "agent.datadog.com", 1),
+                                      lineYML("account_id", "1234567890", 1),
                                     ],
                                   ),
                                 ),
@@ -136,7 +178,9 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                               child: TextFormField(
                                                 initialValue: agente.clusterName,
                                                 onChanged: (value) {
-                                                  agente.clusterName = value;
+                                                  setState(() {
+                                                    agente.clusterName = value;
+                                                  });
                                                 },
                                                 decoration: InputDecoration(
                                                   hintText: "Nombre del cluster",
@@ -152,7 +196,9 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                               child: TextFormField(
                                                 initialValue: agente.hostKapetanios,
                                                 onChanged: (value) {
-                                                  agente.hostRegistry = value;
+                                                  setState(() {
+                                                    agente.hostRegistry = value;
+                                                  });
                                                 },
                                                 decoration: InputDecoration(
                                                   hintText: "Registry host",
@@ -168,7 +214,9 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                               child: TextFormField(
                                                 initialValue: agente.hostKapetanios,
                                                 onChanged: (value) {
-                                                  agente.hostKapetanios = value;
+                                                  setState(() {
+                                                    agente.hostKapetanios = value;
+                                                  });
                                                 },
                                                 decoration: InputDecoration(
                                                   hintText: "Kapetanios host",
@@ -196,7 +244,7 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                         Padding(
                           padding: const EdgeInsets.only(left: 40),
                           child: Container(
-                            height: MediaQuery.sizeOf(context).height*.3,
+                            height: MediaQuery.sizeOf(context).height*.2,
                             width: MediaQuery.sizeOf(context).width*.7,
                             decoration: BoxDecoration(
                               border: Border.all(
@@ -207,24 +255,39 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                 Radius.circular(8)
                               )
                             ),
-                            child: DataTable(
-                              columns: const <DataColumn>[
-                                DataColumn(label: Text("POD")),
-                                DataColumn(label: Text("STATUS")),
-                                DataColumn(label: Text("AGE")),
-                                DataColumn(label: Text("READY")),
-                                DataColumn(label: Text("RESTART"))
-                              ], rows: const <DataRow>[
-                                DataRow(
-                                  cells: <DataCell>[
-                                    DataCell(Text("1")),
-                                    DataCell(Text("1")),
-                                    DataCell(Text("1")),
-                                    DataCell(Text("1")),
-                                    DataCell(Text("1")),
-                                  ]
-                                )
-                              ]
+                            child: StreamBuilder<QuerySnapshot>(
+                              stream: FirebaseFirestore.instance.collection("Logs").snapshots(),
+                              builder: (ctx, snapshot){
+                                if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
+                                  return DataTable(
+                                    columns: const <DataColumn>[
+                                      DataColumn(label: Text("Nombre")),
+                                      DataColumn(label: Text("Estatus")),
+                                    ], rows: const <DataRow>[
+                                      DataRow(
+                                        cells: <DataCell>[
+                                          DataCell(Text("Kptns")),
+                                          DataCell(CircularProgressIndicator()),
+                                        ]
+                                      )
+                                    ]
+                                  );
+                                }
+
+                                return DataTable(
+                                    columns: const <DataColumn>[
+                                      DataColumn(label: Text("Nombre")),
+                                      DataColumn(label: Text("Estatus")),
+                                    ], rows: const <DataRow>[
+                                      DataRow(
+                                        cells: <DataCell>[
+                                          DataCell(Text("Kptns")),
+                                          DataCell(Text("Listo")),
+                                        ]
+                                      )
+                                    ]
+                                  );
+                              }
                             ),
                           ),
                         ),
@@ -452,12 +515,12 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
 
   
 
-  Widget lineYML(String clave, String valor, int tabulador, int i){
+  Widget lineYML(String clave, String valor, int tabulador){
     return Padding(
       padding: const EdgeInsets.only(bottom: 3),
       child: RichText(
         text: TextSpan(
-          text: '$i${'\t'*(tabulador+1)}',
+          text: '${'\t'*(tabulador)}',
           style: TextStyle(color: Colors.grey[600],fontSize: 16),
           children: <TextSpan>[
             TextSpan(
@@ -488,3 +551,4 @@ class NoScrollBarBehavior extends ScrollBehavior {
     return child; // Elimina la barra de scroll
   }
 }
+
