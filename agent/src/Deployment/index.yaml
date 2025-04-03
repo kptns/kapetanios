@@ -3,12 +3,12 @@ entries:
   kapetanios-agent:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-03-14T23:01:23.490241-07:00"
+    created: "2025-03-20T00:33:10.107413-07:00"
     description: A Helm chart for Kapetanios Agent deployment on Kubernetes
-    digest: fc4f68be108e0771e2b3215b375d1ebc814d0ed6a0ad7150f9eece083418dd1a
+    digest: fe004e8e1793fe597654c9db95b94e5f8f17d00e925d568509fff81e349aad3e
     name: kapetanios-agent
     type: application
     urls:
     - https://kapetanios-artifactory.nyc3.digitaloceanspaces.com/helm-charts/kapetanios-agent-0.1.1.tgz
     version: 0.1.1
-generated: "2025-03-14T23:01:23.489142-07:00"
+generated: "2025-03-20T00:33:10.106845-07:00"

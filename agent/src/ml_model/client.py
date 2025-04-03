@@ -1,8 +1,14 @@
+# Python tools
 from typing import Dict, List, Union
-from settings.vault import MODEL_API_URL, PREDICTIONS_ENDPOINT, ML_MODEL_TIMEOUT
-
-import requests
 import json
+
+# Modules
+from settings.vault import MODEL_API_URL
+from settings.vault import PREDICTIONS_ENDPOINT
+from settings.vault import ML_MODEL_TIMEOUT
+
+# 3rd party
+import requests
 
 
 class ModelResponseError(Exception):

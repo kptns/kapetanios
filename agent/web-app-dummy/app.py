@@ -11,7 +11,7 @@ async def health():
     return {"status": "ok"}
 
 
-@app.get("/api/v1/config")
+@app.get("/agent/config")
 async def config():
     # Simplified response without parameter validation for testing
     return {
@@ -54,3 +54,8 @@ async def config():
             }
         ]
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -5,3 +5,4 @@ kapetanios-agent.log
 **/kapetanios-agent-**.tgz
 kapetanios-agent.log
 prometheus/
+**/.DS_Store
