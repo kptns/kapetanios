@@ -8,6 +8,7 @@ from ml_model.client import Predictor
 from monitor.prometheus import PrometheusClient
 from logs.main import LogManager
 from control.main import ReplicaManager
+from events.notifications import NotificationManager
 
 # Settings, values
 from settings.vault import AGENT_TIME_INTERVAL
@@ -19,7 +20,8 @@ class Agent:
         queues,
         prometheus=PrometheusClient(),
         logger=LogManager(name="kapetanios-agent"),
-        predictor=Predictor()
+        predictor=Predictor(),
+        event=NotificationManager(source="kapetanios-agent")
     ):
         # Queues
         self.queues = queues
@@ -32,7 +34,8 @@ class Agent:
         # Modules
         self.prometheus = prometheus
         self.predictor = predictor
-        
+        self.event=event
+
         # Logs
         self.logger = logger.init()
 
@@ -76,7 +79,7 @@ class Agent:
                 cluster_state=cluster_state,
                 predictions=predictions
             )
-            
+
             # Apply changes if needed
             self._apply_scaling(
                 current_replicas=cluster_state['current_replicas'],
@@ -93,15 +96,27 @@ class Agent:
         if self.config is None:
             while self.config is None:
                 self.logger.info("[AGENT] Getting lastest configuration at startup.")
+
                 if not self.config_queue.empty():
+
                     self.config = self.config_queue.get()
                     self.logger.info("[AGENT] Lastest configuration set.")
+
+                    self.event.send_event(
+                        log_level="INFO",
+                        message="Lastest configuration set."
+                    )
                 time.sleep(1)
     
         else:
             if not self.config_queue.empty():
                 self.config = self.config_queue.get()
                 self.logger.info("[AGENT] Lastest configuration set.")
+                
+                self.event.send_event(
+                    log_level="INFO",
+                    message="Lastest configuration set."
+                )
 
     def _get_cluster_state(self):
         """Retrieves current state from the cluster"""
@@ -122,6 +137,12 @@ class Agent:
                     namespace=deployment.namespace
                 )
             }
+
+            self.event.send_event(
+                log_level="INFO",
+                message=f"The state has been retrieved from the cluster. Current replicas={state['current_replicas']}"
+            )
+
             return state
 
         except Exception as e:
@@ -130,6 +151,13 @@ class Agent:
     def _get_predictions(self):
         """Gets predictions from the ML model"""
         usage_metrics = self.prometheus.get_usage_package()
+        
+        # notifications
+        self.event.send_event(
+            log_level="INFO",
+            message=f"The predictions has been retrieved from the ML model."
+        )
+
         return self.predictor.get_predictions(data=usage_metrics)
 
     def _calculate_replicas(self, cluster_state, predictions):
@@ -163,10 +191,16 @@ class Agent:
         """Applies the scaling changes if needed"""
         if new_replicas != current_replicas:
             deployment = self.config.deployments[0]
+
             self.kube_client.set_deployment_replicas(
                 name=deployment.name,
                 namespace=deployment.namespace,
                 replicas=new_replicas
+            )
+            
+            self.event.send_event(
+                log_level="INFO",
+                message=f"The replicas has been scaled from {current_replicas} to {new_replicas}."
             )
 
     def _log_pipeline_state(self, cluster_state, predictions, new_replicas):

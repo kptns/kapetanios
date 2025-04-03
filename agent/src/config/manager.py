@@ -1,14 +1,18 @@
+# Python tools
 from typing import Dict, List, Protocol
-from settings.vault import get_full_api_url
-from settings.vault import KPTNS_API_KEY
-from settings.vault import INITIAL_POLLING_INTERVAL
-from models.kubernetes import Deployment
+import time
+import logging
 import datetime
 import uuid
 import json
+
+# Modules
+from settings.vault import get_full_api_url
+from settings.vault import INITIAL_POLLING_INTERVAL
+from models.kubernetes import Deployment
+
+# 3rd party
 import requests
-import time
-import logging
 
 # Create log filenames with timestamp
 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -52,7 +56,7 @@ class HTTPConfigFetcher(ConfigFetcher):
         """
         try:
             headers = {
-                "Authorization": f"Bearer {KPTNS_API_KEY}",
+                "Authorization": f"Bearer ABCDEFGHIJKL123",
                 "Content-Type": "application/json",
             }
 

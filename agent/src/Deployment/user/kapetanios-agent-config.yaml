@@ -4,7 +4,6 @@ metadata:
   name: kapetanios-agent-config
   namespace: kapetanios
 data:
-  config.yaml: |
-    PROMETHEUS_URL: http://164.90.255.142:9090
-    MODEL_API_URL: http://localhost:8080
-    KAPETANIOS_SERVER_URL: http://127.0.0.1:8000
+  PROMETHEUS_URL: "http://localhost:9090"
+  MODEL_API_URL: "http://localhost"
+  KAPETANIOS_SERVER_URL: "http://localhost:8085"

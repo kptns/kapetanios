@@ -1,0 +1,6 @@
+helm repo add kapetanios https://kapetanios-artifactory.nyc3.digitaloceanspaces.com/helm-charts
+helm repo update
+helm install kapetanios-agent kapetanios/kapetanios-agent
+
+
+kubectl apply -f kapetanios-agent-values.yaml

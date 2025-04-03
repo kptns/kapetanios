@@ -28,6 +28,9 @@ spec:
           volumeMounts:
             - name: config-volume
               mountPath: /etc/config
+          env:
+            - name: CONFIGMAP_PATH
+              value: "/etc/config"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:

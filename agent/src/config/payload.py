@@ -1,35 +1,39 @@
-{
-    "timestamp": "<timestamp>",
-    "polling_interval": "<polling interval>",
+import time
+
+payload = {
+    "timestamp": str(time.time()),
+    "polling_interval": 5,
     "deployments": [
         {
             "name": "kapetanios-sample-app",
-            "model": "kptns-sample-app-<timestamp>",
+            "namespace": "default",
+            "model": "kptns-sample-app-",
             "status": {
-                "enabled": true,
+                "enabled": True,
                 "min_replicas": 1,
-                "max_replicas": 3,
+                "max_replicas": 6,
                 "cpu_usage_threshold": 0.85,
                 "memory_usage_threshold": 0.85,
                 "hpa": {
-                    "available": true,
-                    "hpa_name": "<hpa name here>",
-                    "target_spec_name": "kptns-other-app-<timestamp>"
+                    "available": False,
+                    "hpa_name": "sample-hpa",
+                    "target_spec_name": "kptns-other-app-1736220219"
                 }
             }
         },
         {
             "name": "other-app",
-            "model": "kptns-other-app-<timestamp>",
+            "namespace": "default",
+            "model": "kptns-other-app-1736220345",
             "status": {
-                "enabled": "false",
+                "enabled": False,
                 "min_replicas": 1,
                 "max_replicas": 3,
                 "cpu_usage_threshold": 0.85,
                 "memory_usage_threshold": 0.85,
                 "hpa": {
-                    "available": true,
-                    "hpa_name": "<hpa name here>",
+                    "available": True,
+                    "hpa_name": "other-hpa",
                     "target_spec_name": "kptns-other-app-<timestamp>"
                 }
             }
