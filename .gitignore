@@ -1,6 +1,1 @@
 base-app/env/
-agent/agent-env/
-**/__pycache__/
-.DS_Store
-*/.env.example
-**/__init__.py
