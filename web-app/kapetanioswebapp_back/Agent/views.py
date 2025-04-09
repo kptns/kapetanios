@@ -4,7 +4,9 @@ from Utils.ResponseUtils import CustomResponse
 from Utils.firebaseservice import FirebaseService
 import os
 import json
-import datetime
+import time
+from rest_framework.response import Response
+from rest_framework import status
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # Directorio raíz del proyecto
 credential_path = os.path.join(BASE_DIR, "Assets/firebase-keys.json")
@@ -18,15 +20,14 @@ class Config(APIView):
         # if documento:
         #     return CustomResponse.success(data=documento)
         # return CustomResponse.error(message="Documento no encontrado")
-        current_timestamp = datetime.datetime.now().isoformat()
         data = {
-            "timestamp": current_timestamp,
+            "timestamp": str(time.time()),
             "polling_interval": 5,
             "deployments": [
                 {
                     "name": "kapetanios-sample-app",
                     "namespace": "default",
-                    "model": "kptns-sample-app",  # Corregido: f-string innecesario
+                    "model": "kptns-sample-app-",
                     "status": {
                         "enabled": True,
                         "min_replicas": 1,
@@ -53,15 +54,14 @@ class Config(APIView):
                         "hpa": {
                             "available": True,
                             "hpa_name": "other-hpa",
-                            # Usando timestamp dinámico
-                            "target_spec_name": f"kptns-other-app-{current_timestamp}"
+                            "target_spec_name": "kptns-other-app-<timestamp>"
                         }
                     }
                 }
             ]
         }
 
-        return CustomResponse.success(data=data)
+        return Response(data, status=status.HTTP_200_OK)
 
 class Report(APIView):
     def put(self, request):

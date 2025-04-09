@@ -5,7 +5,7 @@ import 'package:kapetanioswebapp_front/domain/entities/ResponseEntity.dart';
 import 'package:http/http.dart' as http;
 
 class Agenteservice {
-  final String url_base = "http://localhost:8080/config/update";
+  final String url_base = "https://kptnos.com/config/update";
 
   Future<Responseentity?> saveAgent(Agente agente) async {
     Uri  url = Uri.parse(url_base);

@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kapetanioswebapp_front/domain/entities/AgentEntity.dart';
+import 'package:kapetanioswebapp_front/domain/entities/LogsEntity.dart';
 import 'package:kapetanioswebapp_front/domain/entities/ResponseEntity.dart';
 import 'package:kapetanioswebapp_front/domain/use_cases/AgenteService.dart';
 import 'package:kapetanioswebapp_front/presentation/screens/menu.dart';
@@ -23,13 +24,13 @@ class _RegistroNuevoMonitorState extends State<RegistroNuevoMonitor> {
     fontSize: 25,
     fontWeight: FontWeight.w500
   );
-  String selectedItem = "Operator";
+  String selectedItem = "Heml Chart";
   String selectedMenuItem = "";
   String instructionsInstallOperator = """
-helm repo add datadog https://helm.datadoghq.com
-helm install datadog-operator datadog/datadog-operator
-kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f51ba73cf9c3bede5088bc2""";
-  String deployText = "kubectl apply -f datadog-agent.yaml";
+helm repo add kapetanios https://kapetanios-artifactory.nyc3.digitaloceanspaces.com/helm-charts
+helm repo update
+helm install kapetanios-agent kapetanios/kapetanios-agent""";
+  String deployText = "kubectl apply -f kapetanios-agent-config.yaml";
   Agenteservice agenteservice = Agenteservice();
   late Agente agente; //Agente(dateTime: DateTime.now());
   bool actualizar = false;
@@ -38,9 +39,9 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
   void initState() {
     agente = widget.agente;
     actualizar = agente.id != "";
-    agente.hostKapetanios = "hostkpts";
-    agente.clusterName = "cluster";
-    agente.hostRegistry = "hostReg";
+    agente.prommetheusUrl = "http://164.90.255.142:9090";
+    agente.modelApiUrl = "http://localhost:8080";
+    agente.kptsServerUrl = " http://127.0.0.1:8000";
     super.initState();
   }
 
@@ -117,15 +118,15 @@ kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f
                                             // when button is pressed
                                             onPressed: () async {
                                               await Clipboard.setData(ClipboardData(text: """
-apiVersion: "datadoghq.com/v2alpha1"
-kind: "${agente.hostKapetanios}"
+apiVersion: "v1"
+kind: "ConfigMap"
 metadata:
-  name: "${agente.clusterName}"
-  namespace: "${agente.hostRegistry}"
-spec:
-  server_host: "server_host"
-  datadog_host: "agent.datadog.com"
-  account_id: "1234567890"
+  name: "kapetanios-agent-config"
+  namespace: "kapetanios"
+data:
+  PROMETHEUS_URL: ${agente.prommetheusUrl}
+  MODEL_API_URL: ${agente.modelApiUrl}
+  KAPETANIOS_SERVER_URL: ${agente.kptsServerUrl}
 """));
                                               
                                               // Mostrar feedback al usuario
@@ -141,15 +142,15 @@ spec:
                                           ),
                                         ],
                                       ),
-                                      lineYML("apiVersion", "datadoghq.com/v2alpha1", 0),
-                                      lineYML("kind", agente.hostKapetanios, 0),
+                                      lineYML("apiVersion", "v1", 0),
+                                      lineYML("kind", "ConfigMap", 0),
                                       lineYML("metadata", "", 0),
-                                      lineYML("name", agente.clusterName, 1),
-                                      lineYML("namespace", agente.hostRegistry, 1),
-                                      lineYML("spec", "", 0),
-                                      lineYML("server_host", "example.server.com", 1),
-                                      lineYML("datadog_host", "agent.datadog.com", 1),
-                                      lineYML("account_id", "1234567890", 1),
+                                      lineYML("name", "kapetanios-agent-config", 1),
+                                      lineYML("namespace", "kapetanios", 1),
+                                      lineYML("data", "", 0),
+                                      lineYML("PROMETHEUS_URL", agente.prommetheusUrl, 1),
+                                      lineYML("MODEL_API_URL", agente.modelApiUrl, 1),
+                                      lineYML("KAPETANIOS_SERVER_URL", agente.kptsServerUrl, 1),
                                     ],
                                   ),
                                 ),
@@ -176,15 +177,15 @@ spec:
                                             Padding(
                                               padding: const EdgeInsets.all(8.0),
                                               child: TextFormField(
-                                                initialValue: agente.clusterName,
+                                                initialValue: agente.prommetheusUrl,
                                                 onChanged: (value) {
                                                   setState(() {
-                                                    agente.clusterName = value;
+                                                    agente.prommetheusUrl = value;
                                                   });
                                                 },
                                                 decoration: InputDecoration(
-                                                  hintText: "Nombre del cluster",
-                                                  labelText: "Nombre del cluster",
+                                                  hintText: "Prometheus URL",
+                                                  labelText: "Prometheus URL",
                                                   border: OutlineInputBorder(
                                                     borderRadius: BorderRadius.circular(8),
                                                     borderSide: BorderSide(color: Colors.black, width: 1),
@@ -194,15 +195,15 @@ spec:
                                             ),Padding(
                                               padding: const EdgeInsets.all(8.0),
                                               child: TextFormField(
-                                                initialValue: agente.hostKapetanios,
+                                                initialValue: agente.modelApiUrl,
                                                 onChanged: (value) {
                                                   setState(() {
-                                                    agente.hostRegistry = value;
+                                                    agente.modelApiUrl = value;
                                                   });
                                                 },
                                                 decoration: InputDecoration(
-                                                  hintText: "Registry host",
-                                                  labelText: "Registry host",
+                                                  hintText: "Model Api Url",
+                                                  labelText: "Model Api Url",
                                                   border: OutlineInputBorder(
                                                     borderRadius: BorderRadius.circular(8),
                                                     borderSide: BorderSide(color: Colors.black, width: 1),
@@ -212,15 +213,15 @@ spec:
                                             ),Padding(
                                               padding: const EdgeInsets.all(8.0),
                                               child: TextFormField(
-                                                initialValue: agente.hostKapetanios,
+                                                initialValue: agente.kptsServerUrl,
                                                 onChanged: (value) {
                                                   setState(() {
-                                                    agente.hostKapetanios = value;
+                                                    agente.kptsServerUrl = value;
                                                   });
                                                 },
                                                 decoration: InputDecoration(
-                                                  hintText: "Kapetanios host",
-                                                  labelText: "Kapetanios host",
+                                                  hintText: "Kapetanios Server",
+                                                  labelText: "Kapetanios Server",
                                                   border: OutlineInputBorder(
                                                     borderRadius: BorderRadius.circular(8),
                                                     borderSide: BorderSide(color: Colors.black, width: 1),
@@ -256,37 +257,50 @@ spec:
                               )
                             ),
                             child: StreamBuilder<QuerySnapshot>(
-                              stream: FirebaseFirestore.instance.collection("Logs").snapshots(),
+                              stream: FirebaseFirestore.instance.collection("Logs")
+                                .orderBy("timestamp", descending: true)
+                                .snapshots(),
                               builder: (ctx, snapshot){
                                 if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
                                   return DataTable(
                                     columns: const <DataColumn>[
-                                      DataColumn(label: Text("Nombre")),
-                                      DataColumn(label: Text("Estatus")),
+                                      DataColumn(label: Text("Log")),
+                                      DataColumn(label: Text("Hora")),
+                                      DataColumn(label: Text("Mensaje")),
+                                      DataColumn(label: Text("Fuente")),
                                     ], rows: const <DataRow>[
                                       DataRow(
                                         cells: <DataCell>[
-                                          DataCell(Text("Kptns")),
                                           DataCell(CircularProgressIndicator()),
+                                          DataCell(Text("")),
+                                          DataCell(Text("")),
+                                          DataCell(Text("")),
                                         ]
                                       )
                                     ]
                                   );
                                 }
 
-                                return DataTable(
-                                    columns: const <DataColumn>[
-                                      DataColumn(label: Text("Nombre")),
-                                      DataColumn(label: Text("Estatus")),
-                                    ], rows: const <DataRow>[
-                                      DataRow(
-                                        cells: <DataCell>[
-                                          DataCell(Text("Kptns")),
-                                          DataCell(Text("Listo")),
-                                        ]
-                                      )
-                                    ]
-                                  );
+                                final logs = snapshot.data!.docs.map((doc) {
+                                  return LogEntity.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+                                }).toList();
+                                return SingleChildScrollView(
+                                  child: DataTable(
+                                      columns: const <DataColumn>[
+                                        DataColumn(label: Text("Log")),
+                                        DataColumn(label: Text("Hora")),
+                                        DataColumn(label: Text("Mensaje")),
+                                        DataColumn(label: Text("Fuente")),
+                                      ], rows: logs.map((log) {
+                                        return DataRow(cells: [
+                                          DataCell(Text(log.logLevel)),
+                                          DataCell(Text(log.timestamp.toString())),
+                                          DataCell(Text(log.message)),
+                                          DataCell(Text(log.source)),
+                                        ]);
+                                      }).toList()
+                                    ),
+                                );
                               }
                             ),
                           ),
@@ -450,12 +464,12 @@ spec:
               instructionsInstallOperator = """
 helm repo add datadog https://helm.datadoghq.com
 helm install datadog-operator datadog/datadog-operator
-kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f51ba73cf9c3bede5088bc2""";
+kubectl create secret generic datadog-secret --from-literal""";
             }else{
               instructionsInstallOperator = """
-helm repo add datadog https://helm.datadoghq.com
+helm repo add kapetanios https://kapetanios-artifactory.nyc3.digitaloceanspaces.com/helm-charts
 helm repo update
-kubectl create secret generic datadog-secret --from-literal \napi-key=5bb1b4ba6f51ba73cf9c3bede5088bc2""";
+helm install kapetanios-agent kapetanios/kapetanios-agent""";
             }
           });
         },

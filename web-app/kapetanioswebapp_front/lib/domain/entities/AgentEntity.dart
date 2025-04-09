@@ -3,130 +3,91 @@ import 'dart:convert';
 
 class Agente {
   String id;
-  String clusterName;
-  String hostRegistry;
-  String hostKapetanios;
-  DateTime dateTime;
-  String pod;
-  String status;
-  int ready;
-  int restart;
-  int cpuUsageLimit;
-  int memUsageLimit;
-get getId => this.id;
+  String name;
+  String nameSpace;
+  String prommetheusUrl;
+  String modelApiUrl;
+  String kptsServerUrl;
+  String kind;
+  Agente({
+    this.id = "",
+    this.name = "kapetanios-agent-config",
+    this.nameSpace = "kapetanios",
+    this.prommetheusUrl = "",
+    this.modelApiUrl = "",
+    this.kptsServerUrl = "",
+    this.kind = "ConfigMap",
+  });
+ String get getId => this.id;
 
  set setId(String id) => this.id = id;
 
-  get getClusterName => this.clusterName;
+  get getName => this.name;
 
- set setClusterName( clusterName) => this.clusterName = clusterName;
+ set setName( name) => this.name = name;
 
-  get getHostRegistry => this.hostRegistry;
+  get getNameSpace => this.nameSpace;
 
- set setHostRegistry( hostRegistry) => this.hostRegistry = hostRegistry;
+ set setNameSpace( nameSpace) => this.nameSpace = nameSpace;
 
-  get getHostKapetanios => this.hostKapetanios;
+  get getPrommetheusUrl => this.prommetheusUrl;
 
- set setHostKapetanios( hostKapetanios) => this.hostKapetanios = hostKapetanios;
+ set setPrommetheusUrl( prommetheusUrl) => this.prommetheusUrl = prommetheusUrl;
 
-  get getDateTime => this.dateTime;
+  get getModelApiUrl => this.modelApiUrl;
 
- set setDateTime( dateTime) => this.dateTime = dateTime;
+ set setModelApiUrl( modelApiUrl) => this.modelApiUrl = modelApiUrl;
 
-  get getPod => this.pod;
+  get getKptsServerUrl => this.kptsServerUrl;
 
- set setPod( pod) => this.pod = pod;
+ set setKptsServerUrl( kptsServerUrl) => this.kptsServerUrl = kptsServerUrl;
 
-  get getStatus => this.status;
+  get getKind => this.kind;
 
- set setStatus( status) => this.status = status;
+ set setKind( kind) => this.kind = kind;
 
-  get getReady => this.ready;
-
- set setReady( ready) => this.ready = ready;
-
-  get getRestart => this.restart;
-
- set setRestart( restart) => this.restart = restart;
-
-  get getCpuUsageLimit => this.cpuUsageLimit;
-
- set setCpuUsageLimit( cpuUsageLimit) => this.cpuUsageLimit = cpuUsageLimit;
-
-  get getMemUsageLimit => this.memUsageLimit;
-
- set setMemUsageLimit( memUsageLimit) => this.memUsageLimit = memUsageLimit;
-  Agente({
-    this.id = "",
-    this.clusterName = "",
-    this.hostRegistry = "",
-    this.hostKapetanios = "",
-    required this.dateTime,
-    this.pod = "",
-    this.status = "",
-    this.ready = 0,
-    this.restart = 0,
-    this.cpuUsageLimit = 0,
-    this.memUsageLimit = 0,
-  });
 
   Agente copyWith({
     String? id,
-    String? clusterName,
-    String? hostRegistry,
-    String? hostKapetanios,
-    DateTime? dateTime,
-    String? pod,
-    String? status,
-    int? ready,
-    int? restart,
-    int? cpuUsageLimit,
-    int? memUsageLimit,
+    String? name,
+    String? nameSpace,
+    String? prommetheusUrl,
+    String? modelApiUrl,
+    String? kptsServerUrl,
+    String? kind,
   }) {
     return Agente(
       id: id ?? this.id,
-      clusterName: clusterName ?? this.clusterName,
-      hostRegistry: hostRegistry ?? this.hostRegistry,
-      hostKapetanios: hostKapetanios ?? this.hostKapetanios,
-      dateTime: dateTime ?? this.dateTime,
-      pod: pod ?? this.pod,
-      status: status ?? this.status,
-      ready: ready ?? this.ready,
-      restart: restart ?? this.restart,
-      cpuUsageLimit: cpuUsageLimit ?? this.cpuUsageLimit,
-      memUsageLimit: memUsageLimit ?? this.memUsageLimit,
+      name: name ?? this.name,
+      nameSpace: nameSpace ?? this.nameSpace,
+      prommetheusUrl: prommetheusUrl ?? this.prommetheusUrl,
+      modelApiUrl: modelApiUrl ?? this.modelApiUrl,
+      kptsServerUrl: kptsServerUrl ?? this.kptsServerUrl,
+      kind: kind ?? this.kind,
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
-      'clusterName': clusterName,
-      'hostRegistry': hostRegistry,
-      'hostKapetanios': hostKapetanios,
-      'dateTime': dateTime.millisecondsSinceEpoch,
-      'pod': pod,
-      'status': status,
-      'ready': ready,
-      'restart': restart,
-      'cpuUsageLimit': cpuUsageLimit,
-      'memUsageLimit': memUsageLimit,
+      'name': name,
+      'nameSpace': nameSpace,
+      'prommetheusUrl': prommetheusUrl,
+      'modelApiUrl': modelApiUrl,
+      'kptsServerUrl': kptsServerUrl,
+      'kind': kind,
     };
   }
 
   factory Agente.fromMap(Map<String, dynamic> map) {
     return Agente(
       id: map['id'] as String,
-      clusterName: map['clusterName'] as String,
-      hostRegistry: map['hostRegistry'] as String,
-      hostKapetanios: map['hostKapetanios'] as String,
-      dateTime: DateTime.fromMillisecondsSinceEpoch(map['dateTime'] as int),
-      pod: map['pod'] as String,
-      status: map['status'] as String,
-      ready: map['ready'] as int,
-      restart: map['restart'] as int,
-      cpuUsageLimit: map['cpuUsageLimit'] as int,
-      memUsageLimit: map['memUsageLimit'] as int,
+      name: map['name'] as String,
+      nameSpace: map['nameSpace'] as String,
+      prommetheusUrl: map['prommetheusUrl'] as String,
+      modelApiUrl: map['modelApiUrl'] as String,
+      kptsServerUrl: map['kptsServerUrl'] as String,
+      kind: map['kind'] as String,
     );
   }
 
@@ -136,7 +97,7 @@ get getId => this.id;
 
   @override
   String toString() {
-    return 'Agente(id: $id, clusterName: $clusterName, hostRegistry: $hostRegistry, hostKapetanios: $hostKapetanios, dateTime: $dateTime, pod: $pod, status: $status, ready: $ready, restart: $restart, cpuUsageLimit: $cpuUsageLimit, memUsageLimit: $memUsageLimit)';
+    return 'Agente(id: $id, name: $name, nameSpace: $nameSpace, prommetheusUrl: $prommetheusUrl, modelApiUrl: $modelApiUrl, kptsServerUrl: $kptsServerUrl, kind: $kind)';
   }
 
   @override
@@ -145,31 +106,23 @@ get getId => this.id;
   
     return 
       other.id == id &&
-      other.clusterName == clusterName &&
-      other.hostRegistry == hostRegistry &&
-      other.hostKapetanios == hostKapetanios &&
-      other.dateTime == dateTime &&
-      other.pod == pod &&
-      other.status == status &&
-      other.ready == ready &&
-      other.restart == restart &&
-      other.cpuUsageLimit == cpuUsageLimit &&
-      other.memUsageLimit == memUsageLimit;
+      other.name == name &&
+      other.nameSpace == nameSpace &&
+      other.prommetheusUrl == prommetheusUrl &&
+      other.modelApiUrl == modelApiUrl &&
+      other.kptsServerUrl == kptsServerUrl &&
+      other.kind == kind;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-      clusterName.hashCode ^
-      hostRegistry.hashCode ^
-      hostKapetanios.hashCode ^
-      dateTime.hashCode ^
-      pod.hashCode ^
-      status.hashCode ^
-      ready.hashCode ^
-      restart.hashCode ^
-      cpuUsageLimit.hashCode ^
-      memUsageLimit.hashCode;
+      name.hashCode ^
+      nameSpace.hashCode ^
+      prommetheusUrl.hashCode ^
+      modelApiUrl.hashCode ^
+      kptsServerUrl.hashCode ^
+      kind.hashCode;
   }
 }
 

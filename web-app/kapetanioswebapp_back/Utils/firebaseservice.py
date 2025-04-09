@@ -21,7 +21,7 @@ class FirebaseService:
         if documento_id == "":
             docs = col_ref.stream()
         else:
-            query = col_ref.where(filter=firestore.FieldFilter("id", "==", documento_id))
+            query = col_ref.where(filter=firestore.FieldFilter("name", "==", documento_id))
             docs = query.stream()
 
         resultados = []

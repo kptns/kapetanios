@@ -7,7 +7,7 @@ import 'package:kapetanioswebapp_front/domain/entities/ResponseEntity.dart';
 import 'package:http/http.dart' as http;
 
 class Metricsservice {
-  final String url_base = "http://localhost:8080/metrics";
+  final String url_base = "https://kptnos.com/metrics";
 
   Future<MetricAux> getAgents(String ruta) async {
     MetricAux metrics = MetricAux(x: 0, y: 0);

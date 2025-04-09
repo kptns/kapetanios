@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
@@ -41,22 +42,26 @@ class _MenuState extends State<Menu> {
       for (Agente agente in agentes) {
         tablaAgentes.add(
           DataRow(
-            onSelectChanged: (value) {
+            onSelectChanged: (value) async {
+              final instance = FirebaseFirestore.instance;
+              final batch = instance.batch();
+              var collection = instance.collection('Logs');
+              var snapshots = await collection.get();
+              for (var doc in snapshots.docs) {
+                batch.delete(doc.reference);
+              }
+              batch.commit();
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const Monitor()),
+                MaterialPageRoute(builder: (context) => Monitor(agente: agente,)),
               );
             },
             cells: <DataCell>[
-              DataCell(Text(agente.pod)),
-              DataCell(Text(agente.status)),
-              DataCell(Text(agente.clusterName)),
-              DataCell(Text(agente.hostKapetanios)),
-              DataCell(Text(agente.dateTime.toString())),
-              DataCell(Text(agente.ready.toString())),
-              DataCell(Text(agente.restart.toString())),
-              DataCell(Text(agente.cpuUsageLimit.toString())),
-              DataCell(Text(agente.memUsageLimit.toString())),
+              DataCell(Text(agente.name)),
+              DataCell(Text(agente.nameSpace)),
+              DataCell(Text(agente.prommetheusUrl)),
+              DataCell(Text(agente.modelApiUrl)),
+              DataCell(Text(agente.kptsServerUrl)),
               DataCell(
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -83,7 +88,7 @@ class _MenuState extends State<Menu> {
                         QuickAlert.show(
                           context: context,
                           type: QuickAlertType.confirm,
-                          text: 'Quieres eliminar el agente '+agente.clusterName+"?",
+                          text: 'Quieres eliminar el agente '+agente.name+"?",
                           confirmBtnText: 'Si',
                           cancelBtnText: 'No',
                           confirmBtnColor: Colors.green,
@@ -172,10 +177,18 @@ class _MenuState extends State<Menu> {
                         borderRadius: BorderRadius.all(Radius.circular(5)),
                       ),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
+                      final instance = FirebaseFirestore.instance;
+                      final batch = instance.batch();
+                      var collection = instance.collection('Logs');
+                      var snapshots = await collection.get();
+                      for (var doc in snapshots.docs) {
+                        batch.delete(doc.reference);
+                      }
+                      batch.commit();
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegistroNuevoMonitor(agente: Agente(dateTime: DateTime.now())),),
+                        MaterialPageRoute(builder: (context) => RegistroNuevoMonitor(agente: Agente()),),
                       );
                     },
                     icon: Icon(FontAwesomeIcons.plus, size: 20, color: Colors.white,),
@@ -271,22 +284,22 @@ class _MenuState extends State<Menu> {
                 child: DataTable(
                   showCheckboxColumn: false,
                   columns: const <DataColumn>[
-                    DataColumn(label: Text("POD")),
-                    DataColumn(label: Text("STATUS")),
-                    DataColumn(label: Text("CLUSTER")),
-                    DataColumn(label: Text("NAMESPACE")),
-                    DataColumn(label: Text("AGE")),
-                    DataColumn(label: Text("READY")),
-                    DataColumn(label: Text("RESTART")),
-                    DataColumn(label: Text("CPI USAGE/LIMITS")),
-                    DataColumn(label: Text("MEM USAGE/LIMITS")),
+                    DataColumn(label: Text("Nombre")),
+                    DataColumn(label: Text("Name space")),
+                    DataColumn(label: Text("Prometheus URL")),
+                    DataColumn(label: Text("Model Api Url")),
+                    DataColumn(label: Text("Kptns Server Url")),
                     DataColumn(label: Text(""))
                   ], rows: tablaAgentes
                 ),
               ),
             )
           ],
-          
+          // DataCell(Text(agente.name)),
+          //     DataCell(Text(agente.nameSpace)),
+          //     DataCell(Text(agente.prommetheusUrl)),
+          //     DataCell(Text(agente.modelApiUrl)),
+          //     DataCell(Text(agente.kptsServerUrl)),
         ),
       )
     );

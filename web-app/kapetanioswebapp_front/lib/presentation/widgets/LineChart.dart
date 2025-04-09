@@ -10,13 +10,15 @@ class LineChart extends StatefulWidget {
   final List<String> legendsName;
   final String ruta;
   final String intervalo;
+  final String yLabel;
 
   const LineChart({
     Key? key,
     required this.titulo,
     required this.legendsName,
     required this.ruta,
-    required this.intervalo
+    required this.intervalo, 
+    required this.yLabel
   }) : super(key: key);
 
   @override
@@ -86,13 +88,13 @@ class _LineChartState extends State<LineChart> with AutomaticKeepAliveClientMixi
             primaryYAxis: NumericAxis(
               axisLine: const AxisLine(width: 0),
               majorTickLines: const MajorTickLines(size: 0),
-              title: const AxisTitle(text: "Gb"),
+              title: AxisTitle(text: widget.yLabel),
             ),
             series: <AreaSeries<MetricAux, DateTime>>[
               AreaSeries<MetricAux, DateTime>(
                 dataSource: _chartData,
                 xValueMapper: (MetricAux data, _) => DateTime.fromMillisecondsSinceEpoch(data.x! as int),
-                yValueMapper: (MetricAux data, _) => data.y,
+                yValueMapper: (MetricAux data, _) => tranformData(data.y),
                 color: Colors.blue.withOpacity(0.5),
                 borderColor: Colors.blue,
                 borderWidth: 2,
@@ -116,6 +118,15 @@ class _LineChartState extends State<LineChart> with AutomaticKeepAliveClientMixi
         ],
       ),
     );
+  }
+
+  double tranformData(double? data){
+    if(widget.ruta == "cpu"){
+      return data!*100;
+    }else if(widget.ruta == "memory"){
+      return data!/10000000;
+    }
+    return data!;
   }
 
   Future<void> _updateDataSource(Timer timer) async {

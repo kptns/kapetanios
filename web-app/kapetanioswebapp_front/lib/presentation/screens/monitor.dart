@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:kapetanioswebapp_front/domain/entities/AgentEntity.dart';
+import 'package:kapetanioswebapp_front/domain/entities/LogsEntity.dart';
 import 'package:kapetanioswebapp_front/domain/use_cases/MetricsService.dart';
 import 'package:kapetanioswebapp_front/presentation/widgets/LineChart.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 class Monitor extends StatefulWidget {
-  const Monitor({super.key});
+  final Agente agente;
+  const Monitor({super.key, required this.agente});
 
   @override
   State<Monitor> createState() => _MonitorState();
@@ -44,7 +48,7 @@ class _MonitorState extends State<Monitor> {
                     fontWeight: FontWeight.w600
                   ),),
                   SizedBox(width: 20,),
-                  Text("kapetanios")
+                  Text(widget.agente.getName)
                 ],
               ),
             ),
@@ -60,10 +64,11 @@ class _MonitorState extends State<Monitor> {
               ),
               child: Row(
                 children: [
-                  infoLabel("Cluster", "fmoreno-k8s"),
-                  infoLabel("Namespace", "default"),
-                  infoLabel("Age", "5 days"),
-                  infoLabel("Revision", "1"),
+                  infoLabel("Name Space", widget.agente.nameSpace),
+                  infoLabel("Kind", widget.agente.kind),
+                  infoLabel("Ktps Server Url", widget.agente.kptsServerUrl),
+                  infoLabel("Prometheus Url", widget.agente.prommetheusUrl),
+                  infoLabel("Model Api Url", widget.agente.modelApiUrl),
                 ],
               ),
             ),
@@ -121,47 +126,106 @@ class _MonitorState extends State<Monitor> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Expanded(child: LineChart(
-                          titulo: 'CPU Solicitado, Limite y Usado',
+                          titulo: 'CPU Usado',
                           legendsName: [
-                            "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
+                            "Nucleos en uso",
                           ],
                           ruta: "cpu",
-                          intervalo: dropdownValue
+                          intervalo: dropdownValue,
+                          yLabel: "CPU (%)",
                         ),
                       ),
                       Expanded(child: LineChart(
-                          titulo: 'CPU Solicitado, Limite y Usado',
+                          titulo: 'Memoria Usada',
                           legendsName: [
-                            "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
+                            "Memoria en uso"
                           ],
                           ruta: "memory",
-                          intervalo: dropdownValue
+                          intervalo: dropdownValue,
+                          yLabel: "GB",
                         )
                       )
                     ],
                   ),
-                  Row(
-                    children: [
-                      Expanded(child: LineChart(
-                          titulo: 'CPU Solicitado, Limite y Usado',
-                          legendsName: [
-                            "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
-                          ],
-                          ruta: "rxbytes",
-                          intervalo: dropdownValue
-                        )
-                      ),
-                      Expanded(child: LineChart(
-                          titulo: 'CPU Solicitado, Limite y Usado',
-                          legendsName: [
-                            "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
-                          ],
-                          ruta: "txbytes",
-                          intervalo: dropdownValue
-                        )
-                      ),
-                    ],
-                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                              .collection("Logs")
+                              .orderBy("timestamp", descending: true)
+                              .snapshots(),
+                            builder: (ctx, snapshot){
+                              if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
+                                return DataTable(
+                                  columns: const <DataColumn>[
+                                    DataColumn(label: Text("Log")),
+                                    DataColumn(label: Text("Hora")),
+                                    DataColumn(label: Text("Mensaje")),
+                                    DataColumn(label: Text("Fuente")),
+                                  ], rows: const <DataRow>[
+                                    DataRow(
+                                      cells: <DataCell>[
+                                        DataCell(CircularProgressIndicator()),
+                                        DataCell(Text("")),
+                                        DataCell(Text("")),
+                                        DataCell(Text("")),
+                                      ]
+                                    )
+                                  ]
+                                );
+                              }
+                          
+                              final logs = snapshot.data!.docs.map((doc) {
+                                return LogEntity.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+                              }).toList();
+                              return SingleChildScrollView(
+                                child: DataTable(
+                                    columns: const <DataColumn>[
+                                      DataColumn(label: Text("Log")),
+                                      DataColumn(label: Text("Hora")),
+                                      DataColumn(label: Text("Mensaje")),
+                                      DataColumn(label: Text("Fuente")),
+                                    ], rows: logs.map((log) {
+                                      return DataRow(cells: [
+                                        DataCell(Text(log.logLevel)),
+                                        DataCell(Text(log.timestamp.toString())),
+                                        DataCell(Text(log.message)),
+                                        DataCell(Text(log.source)),
+                                      ]);
+                                    }).toList()
+                                  ),
+                              );
+                            }
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                  // Row(
+                  //   children: [
+                  //     Expanded(child: LineChart(
+                  //         titulo: 'CPU Solicitado, Limite y Usado',
+                  //         legendsName: [
+                  //           "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
+                  //         ],
+                  //         ruta: "rxbytes",
+                  //         intervalo: dropdownValue
+                  //       )
+                  //     ),
+                  //     Expanded(child: LineChart(
+                  //         titulo: 'CPU Solicitado, Limite y Usado',
+                  //         legendsName: [
+                  //           "Nucleros usados", "Nucleos limite", "Nucleos solicitados"
+                  //         ],
+                  //         ruta: "txbytes",
+                  //         intervalo: dropdownValue
+                  //       )
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             )
