@@ -11,7 +11,7 @@ import platform
 
 def run_queues(instances: List[object]) -> List[Queue]:
     """
-    Creates a queue ççfor each process.
+    Creates a queue for each process.
     """
     queues = list()
     for _ in range(len(instances)):
