@@ -14,3 +14,9 @@ Your ultimate co-pilot for intelligent systems and complex workflows. Currently,
 - **Kubernetes-Ready:** Seamlessly integrates with Kubernetes to enhance container orchestration.  
 
 **Kapetanios** is just getting started—join us as we continue to expand its capabilities and chart new horizons! 🌐
+
+## 🖥️ System Design
+The system employs an agent running on each node as a DaemonSet for the collection and transmission of Deployment metrics, as well as for managing the number of replicas for each Deployment according to the configuration. An external application is responsible for data management and the training of machine learning models, which power the core functionality of Kapetanios.
+
+![Kapetanios System Design](./assets/kapetanios-system-design-draft.jpg)
+*Figura 1: Kapetanios system design.*
