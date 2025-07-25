@@ -52,15 +52,16 @@ We welcome contributions from the open source community.
 
 ## 📁 File Structure (planned)
 
+```text
 kapetanios/
-├── agent/ # Go agent to collect and apply autoscaling
-├── backend/ # API to serve and trigger ML models
-├── frontend/ # Web UI for monitoring, control and training
-├── ml-core/ # Data preprocessing, model training and inference
-├── docs/ # Full documentation (ReadTheDocs-ready)
-└── .github/ # CI/CD and community templates
-
+├── agent/            # Go agent to collect and apply autoscaling
+├── backend/          # API to serve and trigger ML models
+├── frontend/         # Web UI for monitoring, control and training
+├── ml-core/          # Data preprocessing, model training and inference
+├── docs/             # Full documentation (ReadTheDocs-ready)
+└── .github/          # CI/CD and community templates
+```
 
 ## 📌 License
 
-Kapetanios is released under the [MIT License](../LICENSE).
+Kapetanios is released under the [MIT License](https://opensource.org/licenses/MIT).
