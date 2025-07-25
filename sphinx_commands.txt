@@ -1,0 +1,7 @@
+# Commands of sphinx
+
+# Build
+sphinx-build -b html . _build/html
+
+# Visualize 
+open _build/html/index.html
