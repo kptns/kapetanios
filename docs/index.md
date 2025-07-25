@@ -44,4 +44,5 @@ api/modules
 faq
 changelog
 license
+product/PRD
 ```
