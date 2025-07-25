@@ -1,4 +1,4 @@
-![Kapetanios Banner](./assets/kapetanios-banner-compressed.png)
+![Kapetanios Banner](./docs/assets/kapetanios-banner-compressed.png)
 
 # Kapetanios 🚀  
 Welcome to **Kapetanios**! 🌊⚓  
@@ -18,5 +18,5 @@ Your ultimate co-pilot for intelligent systems and complex workflows. Currently,
 ## 🖥️ System Design
 The system employs an agent running on each node as a DaemonSet for the collection and transmission of Deployment metrics, as well as for managing the number of replicas for each Deployment according to the configuration. An external application is responsible for data management and the training of machine learning models, which power the core functionality of Kapetanios.
 
-![Kapetanios System Design](./assets/kapetanios-system-design-draft.jpg)
+![Kapetanios System Design](./docs/assets/kapetanios-system-design-draft.jpg)
 *Figura 1: Kapetanios system design.*
