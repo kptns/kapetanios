@@ -1,14 +1,37 @@
-# Welcome to Your Project's Documentation 🚀
+# Kapetanios Documentation 🚀
 
-This is the official documentation site, built with **Sphinx** and **Markdown (MyST)**.
+Welcome to the official documentation for **Kapetanios**.
 
-## 📚 Overview
+This site provides comprehensive guidance for installing, using, extending, and contributing to the project.
 
-This project aims to provide a reliable and scalable solution for [insert purpose briefly].
+:maxdepth: 2
+:caption: 📘 Getting Started
 
-## 🔧 Installation
+installation
+usage
 
-Provide installation instructions here.
+:maxdepth: 2
+:caption: ⚙️ Architecture
 
-```bash
-pip install your-package-name
+architecture
+design-decisions
+diagrams
+
+:maxdepth: 2
+:caption: 🧪 Development & Contributing
+
+contributing
+testing
+ci-cd
+
+:maxdepth: 2
+:caption: 📡 API Reference
+
+api/modules
+
+:maxdepth: 2
+:caption: 📦 Extras
+
+faq
+changelog
+license
