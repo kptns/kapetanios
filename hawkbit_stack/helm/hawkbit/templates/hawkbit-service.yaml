@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-hawkbit
+  labels:
+    app: {{ .Release.Name }}-hawkbit
+spec:
+  ports:
+    - port: {{ .Values.hawkbit.service.port }}
+      targetPort: {{ .Values.hawkbit.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Release.Name }}-hawkbit 

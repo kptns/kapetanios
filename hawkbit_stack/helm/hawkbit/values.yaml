@@ -1,0 +1,30 @@
+mysql:
+  image: mariadb:10.5
+  rootPassword: root
+  database: hawkbit
+  service:
+    port: 3306
+    targetPort: 3306
+
+rabbitmq:
+  image: rabbitmq:3-management
+  username: guest
+  password: guest
+  service:
+    amqpPort: 5672
+    managementPort: 15672
+
+hawkbit:
+  image: hawkbit/hawkbit-update-server:latest
+  service:
+    port: 8080
+    targetPort: 8080
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 10Gi
+
+replicaCount:
+  mysql: 1
+  rabbitmq: 1
+  hawkbit: 1 

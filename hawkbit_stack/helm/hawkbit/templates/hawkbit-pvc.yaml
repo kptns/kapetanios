@@ -1,0 +1,17 @@
+{{- if .Values.hawkbit.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-hawkbit-artifactrepo
+  labels:
+    app: {{ .Release.Name }}-hawkbit
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- if .Values.hawkbit.persistence.storageClass }}
+  storageClassName: {{ .Values.hawkbit.persistence.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.hawkbit.persistence.size }}
+{{- end }} 

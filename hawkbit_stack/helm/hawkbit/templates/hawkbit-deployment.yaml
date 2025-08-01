@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-hawkbit
+  labels:
+    app: {{ .Release.Name }}-hawkbit
+spec:
+  replicas: {{ .Values.replicaCount.hawkbit }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-hawkbit
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-hawkbit
+    spec:
+      containers:
+        - name: hawkbit
+          image: {{ .Values.hawkbit.image }}
+          ports:
+            - containerPort: {{ .Values.hawkbit.service.targetPort }}
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: mysql
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mariadb://{{ .Release.Name }}-mysql:{{ .Values.mysql.service.port }}/{{ .Values.mysql.database }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: root
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: {{ .Values.mysql.rootPassword }}
+            - name: SPRING_RABBITMQ_HOST
+              value: {{ .Release.Name }}-rabbitmq
+            - name: SPRING_RABBITMQ_USERNAME
+              value: {{ .Values.rabbitmq.username }}
+            - name: SPRING_RABBITMQ_PASSWORD
+              value: {{ .Values.rabbitmq.password }}
+          {{- if .Values.hawkbit.persistence.enabled }}
+          volumeMounts:
+            - name: artifactrepo
+              mountPath: /artifactrepo
+          {{- end }}
+      {{- if .Values.hawkbit.persistence.enabled }}
+      volumes:
+        - name: artifactrepo
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-hawkbit-artifactrepo
+      {{- end }} 

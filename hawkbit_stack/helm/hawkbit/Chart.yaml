@@ -1,0 +1,12 @@
+apiVersion: v2
+name: hawkbit
+description: A Helm chart for Hawkbit Update Server stack
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - hawkbit
+  - update-server
+  - iot
+maintainers:
+  - name: Kapetanios Team 
