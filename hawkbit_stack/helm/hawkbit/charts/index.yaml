@@ -15,6 +15,6 @@ entries:
     name: hawkbit
     type: application
     urls:
-    - https://kptns.github.io/kapetanios/hawkbit_stack/helm/hawkbit/charts/charts/hawkbit-0.1.0.tgz
+    - https://kptns.github.io/kapetanios/hawkbit_stack/helm/hawkbit/charts/hawkbit-0.1.0.tgz
     version: 0.1.0
 generated: "2025-08-01T00:27:40.913398-07:00"
