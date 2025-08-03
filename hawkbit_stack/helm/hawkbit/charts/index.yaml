@@ -3,9 +3,9 @@ entries:
   hawkbit:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2025-08-02T22:05:12.799089-07:00"
+    created: "2025-08-02T22:16:25.957011-07:00"
     description: A Helm chart for Hawkbit Update Server stack
-    digest: 9dbd9c3dfac881e4371a7537899bba2fceaa14e4c5902720b66154c012c2193f
+    digest: b5638e9d1af6590f8657dfb287c54881f89619388d6d57986fd06ca88cc1ae29
     keywords:
     - hawkbit
     - update-server
@@ -17,4 +17,4 @@ entries:
     urls:
     - https://kptns.github.io/kapetanios/hawkbit_stack/helm/hawkbit/charts/hawkbit-0.1.1.tgz
     version: 0.1.1
-generated: "2025-08-02T22:05:12.796991-07:00"
+generated: "2025-08-02T22:16:25.956471-07:00"
