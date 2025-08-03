@@ -5,9 +5,11 @@ metadata:
   labels:
     app: {{ .Release.Name }}-hawkbit
 spec:
+  type: {{ .Values.hawkbit.service.type | default "NodePort" }}
   ports:
     - port: {{ .Values.hawkbit.service.port }}
       targetPort: {{ .Values.hawkbit.service.targetPort }}
+      nodePort: {{ .Values.hawkbit.service.nodePort }}
       protocol: TCP
       name: http
   selector:

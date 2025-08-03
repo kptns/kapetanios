@@ -17,8 +17,10 @@ rabbitmq:
 hawkbit:
   image: hawkbit/hawkbit-update-server:latest
   service:
+    type: NodePort
     port: 8080
     targetPort: 8080
+    nodePort: 30080
   persistence:
     enabled: true
     storageClass: ""

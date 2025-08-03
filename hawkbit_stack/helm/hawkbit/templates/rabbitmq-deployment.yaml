@@ -26,16 +26,4 @@ spec:
             - name: RABBITMQ_DEFAULT_USER
               value: {{ .Values.rabbitmq.username }}
             - name: RABBITMQ_DEFAULT_PASS
-              value: {{ .Values.rabbitmq.password }}
-          livenessProbe:
-            tcpSocket:
-              port: amqp
-            initialDelaySeconds: 30
-            timeoutSeconds: 5
-            periodSeconds: 10
-          readinessProbe:
-            tcpSocket:
-              port: amqp
-            initialDelaySeconds: 5
-            timeoutSeconds: 2
-            periodSeconds: 10 
+              value: {{ .Values.rabbitmq.password }} 
