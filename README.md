@@ -20,3 +20,6 @@ The system employs an agent running on each node as a DaemonSet for the collecti
 
 ![Kapetanios System Design](./docs/assets/kapetanios-system-design-draft.jpg)
 *Figura 1: Kapetanios system design.*
+
+# Documentation
+For detailed documentation, please visit [Kapetanios Documentation](https://kapetanios.readthedocs.io/en/latest/).
