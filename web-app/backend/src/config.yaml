@@ -1,0 +1,7 @@
+kapetanios:
+  storage:
+    type: local
+    databasepath: '/database'
+    buckets:
+      public: 'kapetanios'
+      private: 'kapetaniospriv'
