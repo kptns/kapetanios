@@ -21,59 +21,21 @@ const start = async function () {
   } catch (e) {
     console.error('ERROR -  Trying to intialize DB', e);
   }
-  /*try {
-
-
-   if (Globals.IsAWSEnvironment) {
-      console.log(
-        'Running on AWS, IsAWSEnvironment is ' +
-          Globals.IsAWSEnvironment +
-          ' HAL9_ENV is ' +
-          process.env.HAL9_ENV +
-          '.'
-      );
-
-      var settingLength = 0;
-      if (process.env.AWS_KEY != null) {
-        settingLength = process.env.AWS_KEY.length;
-      }
-      console.log('Running on AWS, environment AWS_KEY is ' + settingLength);
-
-      if (process.env.AWS_SECRET != null) {
-        settingLength = process.env.AWS_SECRET.length;
-      } else {
-        settingLength = 0;
-      }
-      console.log('Running on AWS, environment AWS_SECRET is ' + settingLength);
-    } else {
-      console.log(
-        'Running locally, IsAWSEnvironment is ' +
-          Globals.IsAWSEnvironment +
-          ', HAL9_ENV is ' +
-          process.env.HAL9_ENV +
-          '.'
-      );
-    }
-
-    console.log(
-      'Using S3 storage private: ' +
-        hal9S3StorageBucketNamePrivate +
-        ', public: ' +
-        hal9S3StorageBucketNamePublic
-    );
-
-    // AWS secrets have to be set first, before accessing anything.
-    //initDatabaseAsync();
-  } catch (err) {
-    console.error(err);
-  }*/
 };
 start();
 
 export const register = (app: any) => {
-  app.get('/api/sql/version', async (req: any, res: any) => { 
+  app.get('/api/sql/tables', async (req: any, res: any) => {
     const tables = await dbutils.listTables();
     console.log(tables)
+    res.send('version');
+  });
+
+  app.post('/api/sql/insert/user', async (req: any, res: any) => {
+    const user = req.body?.user;
+
+    //generate guid 
+    const tables = await dbutils.execInsertUser();
     res.send('version');
   });
 }

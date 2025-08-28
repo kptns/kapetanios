@@ -6,7 +6,12 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
-
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Headers', '*');
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, PATCH, POST, DELETE');
+  next();
+});
 db.register(app);
 
 // Define a simple root route

@@ -7,8 +7,11 @@ import * as path from 'path';
 
 // Database constants and global variables
 const DBNotPresent = -1;
-const DBInitialTables = 1;
-const maxDBVersion = DBInitialTables;
+const DBUsersTables = 1;
+const DBClustersTables = 2;
+const DBDeploymentsTables = 3;
+const DBuserclusterMapTables = 4;
+const maxDBVersion = DBuserclusterMapTables;  // this needs to be the version variable 
 const dbLocalPath = config.get('KAPETANIOS_DATABASEPATH') || 'database/';
 const dbFullFilename = path.join(dbLocalPath, 'Kapetanios.db');
 
@@ -25,34 +28,136 @@ const ensureLocalPath = () => {
 
 };
 
-/**
- * Initializes the 'teams' table if a database upgrade is needed.
- */
-const initializeTeamsTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion: number) => {
+const initializeUsersTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion: number) => {
   if (!dbUpgradeNeeded) {
     return 0;
   }
-  if (updateToVersion === DBNotPresent || updateToVersion < DBInitialTables) {
-    const initClustersTable = `
-      CREATE TABLE IF NOT EXISTS clusters (
-        id INTEGER PRIMARY KEY NOT NULL,
-        cluster TEXT,
-        provider TEXT,
-        token TEXT
-      );`;
-    /*const initTeamsTableTeamIdIndex = `
-      CREATE INDEX IF NOT EXISTS index_teamId_teams ON teams (teamId);`;*/
-    try {
-      console.log('Going to create clusters table.');
-      db.exec(initClustersTable);
-      //db.exec(initTeamsTableTeamIdIndex);
-    } catch (err) {
-      console.log('Failed to execute initTeamsTable, error: ' + err);
-      return -1;
+
+  switch (updateToVersion) {
+    case DBUsersTables: {
+      try {
+        const initUsersTable = `
+          CREATE TABLE IF NOT EXISTS users (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              user_guid TEXT UNIQUE NOT NULL,
+              token TEXT
+          );`;
+        /*const initUsersTableIndex = `
+            CREATE INDEX IF NOT EXISTS index_userId_teams ON users (userId);`;*/
+        console.log('Going to create users table.');
+        db.exec(initUsersTable);
+        //db.exec(initUsersTableIndex);
+      } catch (err) {
+        console.log('Failed to execute initTeamsTable, error: ' + err);
+        return -1;
+      }
+
     }
   }
   return 0;
 };
+
+const initializeClustersTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion: number) => {
+  if (!dbUpgradeNeeded) {
+    return 0;
+  }
+
+  switch (updateToVersion) {
+    case DBClustersTables: {
+      try {
+        const initClustersTable = `
+          CREATE TABLE IF NOT EXISTS clusters (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              cluster_guid TEXT UNIQUE NOT NULL,
+              name TEXT NOT NULL,
+              provider TEXT
+          );`;
+        /*const initTeamsTableTeamIdIndex = `
+          CREATE INDEX IF NOT EXISTS index_teamId_teams ON teams (teamId);`;*/
+        console.log('Going to create clusters table.');
+        db.exec(initClustersTable);
+        //db.exec(initTeamsTableTeamIdIndex);
+      } catch (err) {
+        console.log('Failed to execute initTeamsTable, error: ' + err);
+        return -1;
+      }
+
+    }
+  }
+
+  return 0;
+};
+
+const initializeDeploymentsTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion: number) => {
+  if (!dbUpgradeNeeded) {
+    return 0;
+  }
+
+  switch (updateToVersion) {
+    case DBDeploymentsTables: {
+      try {
+        const initDeploymentsTable = `
+          CREATE TABLE IF NOT EXISTS deployments (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              cluster_id INTEGER NOT NULL,
+              name TEXT NOT NULL,
+              model TEXT NOT NULL,
+              enabled BOOLEAN NOT NULL,
+              min_replicas INTEGER NOT NULL,
+              max_replicas INTEGER NOT NULL,
+              hpa_available BOOLEAN NOT NULL,
+              hpa_name TEXT,
+              target_spec_name TEXT,
+              FOREIGN KEY (cluster_id) REFERENCES clusters(id)
+          );`;
+        /*const initTeamsTableTeamIdIndex = `
+          CREATE INDEX IF NOT EXISTS index_teamId_teams ON teams (teamId);`;*/
+        console.log('Going to create deployments table.');
+        db.exec(initDeploymentsTable);
+        //db.exec(initTeamsTableTeamIdIndex);
+      } catch (err) {
+        console.log('Failed to execute initTeamsTable, error: ' + err);
+        return -1;
+      }
+
+    }
+  }
+
+  return 0;
+}
+
+const initializeuser_cluster_mapTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion: number) => {
+  if (!dbUpgradeNeeded) {
+    return 0;
+  }
+
+  switch (updateToVersion) {
+    case DBuserclusterMapTables: {
+      try {
+        const inituser_cluster_mapTable = `
+          CREATE TABLE IF NOT EXISTS user_cluster_map (
+            user_id INTEGER NOT NULL,
+            cluster_id INTEGER NOT NULL,
+            PRIMARY KEY (user_id, cluster_id),
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (cluster_id) REFERENCES clusters(id)
+        );`;
+        /*const initTeamsTableTeamIdIndex = `
+          CREATE INDEX IF NOT EXISTS index_teamId_teams ON teams (teamId);`;*/
+        console.log('Going to create user_cluster_map table.');
+        db.exec(inituser_cluster_mapTable);
+        //db.exec(initTeamsTableTeamIdIndex);
+      } catch (err) {
+        console.log('Failed to execute user_cluster_map, error: ' + err);
+        return -1;
+      }
+
+    }
+  }
+
+  return 0;
+}
+
 
 /**
  * Checks the database version and determines if an upgrade is necessary.
@@ -103,7 +208,7 @@ const initializeVersionTableAndCheckUpgrade = (db: any) => {
 const openDB = async (dbtype: string) => {
   if (dbtype !== 'local') {
     console.log('Database type is not local. Using cloud provider storage.');
-    // need to download db from provider and add it to database/db.db
+    // need to download .db file from provider and add it to database/db.db
   }
   else {
     console.log('going to create this file ??? ')
@@ -130,16 +235,86 @@ const openDB = async (dbtype: string) => {
   }
 }
 
+export const upgradeOrInitializeTables = async (db: any, dbUpgradeNeeded: boolean, updateFromVersion: number, updateToVersion: number) => {
+
+  try {
+    let dbInitFailed = false;
+
+    let updatingToVersion = updateFromVersion + 1;
+
+    console.log('DB upgrade from version ' + updateFromVersion + ' to version ' + updateToVersion);
+
+    while (updatingToVersion <= updateToVersion) {
+      console.log('DB upgrade to version ' + updatingToVersion);
+      let dbInit = 0;
+
+      dbInit = await initializeUsersTable(db, dbUpgradeNeeded, updatingToVersion);
+      if (dbInit != 0) {
+        console.error('initializeUsersTable failed with ' + dbInit);
+        dbInitFailed = true;
+        /*if (allowDBRecreatedOnFailure) {
+          return -2;
+        }*/
+      }
+
+      dbInit = await initializeClustersTable(db, dbUpgradeNeeded, updatingToVersion);
+      if (dbInit != 0) {
+        console.error('initializeclustersTable failed with ' + dbInit);
+        dbInitFailed = true;
+        /*if (allowDBRecreatedOnFailure) {
+          return -2;
+        }*/
+      }
+
+      dbInit = await initializeDeploymentsTable(db, dbUpgradeNeeded, updatingToVersion);
+      if (dbInit != 0) {
+        console.error('initializedeploymentsTable failed with ' + dbInit);
+        dbInitFailed = true;
+        /*if (allowDBRecreatedOnFailure) {
+          return -2;
+        }*/
+      }
+
+      dbInit = await initializeuser_cluster_mapTable(db, dbUpgradeNeeded, updatingToVersion);
+      if (dbInit != 0) {
+        console.error('initializedeploymentsTable failed with ' + dbInit);
+        dbInitFailed = true;
+        /*if (allowDBRecreatedOnFailure) {
+          return -2;
+        }*/
+      }
+      updatingToVersion++;
+    }
+  } catch (e) {
+
+  }
+}
+
+
 export const initializeDatabase = async (dbtype: string) => {
   ensureLocalPath();
   await openDB(dbtype);
   // Perform initialization and upgrades.
   const dbInitUpgrade = initializeVersionTableAndCheckUpgrade(db);
   const isDBUpgradeNeeded = dbInitUpgrade.isDBUpgradeNeeded;
-  const updateFromVersion = dbInitUpgrade.updateFromVersion;
+  const updateFromVersion: number = dbInitUpgrade.updateFromVersion;
+
+
+  console.log('borororo')
+
+  console.log('borororo')
+
+  console.log('borororo')
+  console.log(dbInitUpgrade)
   if (isDBUpgradeNeeded) {
     console.log('DB update is needed. Upgrading from version ' + updateFromVersion + ' to ' + maxDBVersion);
-    initializeTeamsTable(db, isDBUpgradeNeeded, updateFromVersion);
+    //initializeUsersTable(db, isDBUpgradeNeeded, updateFromVersion);
+    const initResult = await upgradeOrInitializeTables(
+      db,
+      isDBUpgradeNeeded,
+      updateFromVersion,
+      maxDBVersion
+    );
   } else {
     console.log('DB version (' + maxDBVersion + ') is up to date.');
   }
@@ -157,7 +332,7 @@ export const getDB = () => {
   return db;
 };
 
-
+// save database backup in bucket 
 const saveIntervalMinutes = 5;
 setInterval(() => {
   saveBackup();
@@ -183,6 +358,15 @@ export const saveBackup = () => {
     console.error('Failed to save and close the database:', err);
   }
 };
+
+export const execInsertUser = () => {
+
+    /*let dbResult = await executeInsertAsync(
+    'agents',
+    'INSERT INTO agents(agentid, userid, filename, created) VALUES(?, ?, ?, ?)',
+    [agentId, userDB.userId, filename, currentTime]
+  );*/
+}
 
 export const listTables = () => {
   try {
