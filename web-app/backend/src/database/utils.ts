@@ -39,8 +39,10 @@ const initializeUsersTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion
         const initUsersTable = `
           CREATE TABLE IF NOT EXISTS users (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
-              user_guid TEXT UNIQUE NOT NULL,
-              token TEXT
+              user TEXT NOT NULL,
+              guid TEXT UNIQUE NOT NULL,
+              token TEXT,
+              email TEXT NOT NULL
           );`;
         /*const initUsersTableIndex = `
             CREATE INDEX IF NOT EXISTS index_userId_teams ON users (userId);`;*/
@@ -297,7 +299,7 @@ export const initializeDatabase = async (dbtype: string) => {
   // Perform initialization and upgrades.
   const dbInitUpgrade = initializeVersionTableAndCheckUpgrade(db);
   const isDBUpgradeNeeded = dbInitUpgrade.isDBUpgradeNeeded;
-  const updateFromVersion: number = dbInitUpgrade.updateFromVersion;
+  const updateFromVersion: any = dbInitUpgrade.updateFromVersion;
 
 
   console.log('borororo')
@@ -359,14 +361,50 @@ export const saveBackup = () => {
   }
 };
 
-export const execInsertUser = () => {
-
-    /*let dbResult = await executeInsertAsync(
-    'agents',
-    'INSERT INTO agents(agentid, userid, filename, created) VALUES(?, ?, ?, ?)',
-    [agentId, userDB.userId, filename, currentTime]
-  );*/
+async function executeInsertAsync(tableName: string, query: string, data: string[]) {
+  const db = getDB();
+  try {
+    await db.run(query, data);
+    return 0;
+  } catch (error: any) {
+    console.error('Insert failed with ' + error.message + ' for query ' + query + ' data: [' + data + ']');
+    return error;
+  }
 }
+
+export const execInsertUser = async (user: string, guid: string, token: string, email: string) => {
+  console.log('Inserting user: ', user, ' - with email: ', email, ' - and guid: ', guid);
+  let dbResult = await executeInsertAsync(
+    'users',
+    'INSERT INTO users(user, guid, token, email) VALUES(?, ?, ?, ?)',
+    [user, guid, token, email]
+  );
+  return dbResult;
+}
+
+export const getTable = async (table: string) => {
+  try {
+    const db = getDB();
+    const query = `SELECT * FROM ${table};`;
+    const res = db.exec(query);
+    if (res.length > 0) {
+      const rows = res[0].values.map((row: any[]) => {
+        const rowObject: { [key: string]: any } = {};
+        res[0].columns.forEach((colName: string, index: number) => {
+          rowObject[colName] = row[index];
+        });
+        return rowObject;
+      });
+      return rows;
+    } else {
+      console.log('No data found.');
+      return [];
+    }
+  } catch (err: any) {
+    console.error(`Failed to get data from table '${table}':`, err.message);
+    return [];
+  }
+};
 
 export const listTables = () => {
   try {
