@@ -5,6 +5,9 @@ import fs from 'fs';
 import initSqlJs from 'sql.js';
 import * as path from 'path';
 
+// you can use the db directly in the folder like 
+//sqlite3 Kapetanios.db. -> .tables -> SELECT * FROM <table>;
+
 // Database constants and global variables
 const DBNotPresent = -1;
 const DBUsersTables = 1;
@@ -72,7 +75,8 @@ const initializeClustersTable = (db: any, dbUpgradeNeeded: boolean, updateToVers
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               cluster_guid TEXT UNIQUE NOT NULL,
               name TEXT NOT NULL,
-              provider TEXT
+              provider TEXT,
+              user TEXT NOT NULL
           );`;
         /*const initTeamsTableTeamIdIndex = `
           CREATE INDEX IF NOT EXISTS index_teamId_teams ON teams (teamId);`;*/
@@ -361,6 +365,39 @@ export const saveBackup = () => {
   }
 };
 
+function transformDbData(data: any) {
+  if (!Array.isArray(data) || data.length === 0 || !data[0].columns || !data[0].values) {
+    console.error("Input must be a non-empty array with 'columns' and 'values' properties.");
+    return null;
+  }
+
+  const columns = data[0].columns;
+  const values = data[0].values[0];
+
+  const keyValuePairs = columns.map((column:string, index:number) => [column, values[index]]);
+
+  return Object.fromEntries(keyValuePairs);
+}
+
+function transformDbDatas(data: any) {
+  if (!Array.isArray(data) || data.length === 0 || !data[0].columns || !data[0].values) {
+    console.error("Input must be a non-empty array with 'columns' and 'values' properties.");
+    return null;
+  }
+
+  const columns = data[0].columns;
+  const values = data[0].values;
+
+  if (values.length === 0) {
+    return [];
+  }
+
+  return values.map((rowValues: any[]) => {
+    const keyValuePairs = columns.map((column: string, index: number) => [column, rowValues[index]]);
+    return Object.fromEntries(keyValuePairs);
+  });
+}
+
 async function executeInsertAsync(tableName: string, query: string, data: string[]) {
   const db = getDB();
   try {
@@ -380,6 +417,28 @@ export const execInsertUser = async (user: string, guid: string, token: string, 
     [user, guid, token, email]
   );
   return dbResult;
+}
+
+export const execInsertCluster = async (clusterguid: string, name: string, provider: string, user: string) => {
+  console.log('Inserting cluster: ', name, ' - for user : ', user, ' - and provider: ', provider);
+  let dbResult = await executeInsertAsync(
+    'clusters',
+    'INSERT INTO clusters(cluster_guid, name, provider, user) VALUES(?, ?, ?, ?)',
+    [clusterguid, name, provider, user]
+  );
+  return dbResult;
+}
+
+export const getUserByToken = async (token: string) => {
+  const user = await db.exec('SELECT * FROM users WHERE token == ?', [token]);
+  const jsonUser = transformDbData(user);
+  return jsonUser;
+}
+
+export const getClusterByUserId = async (id: string) => {
+  const clusters = await db.exec('SELECT * FROM clusters WHERE user == ?', [id]);
+  const jsonClusters = transformDbDatas(clusters);
+  return jsonClusters;
 }
 
 export const getTable = async (table: string) => {
