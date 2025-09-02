@@ -15,6 +15,8 @@ export function generateToken(guid: string) {
 export const userByToken = async (req: any, res: any, next: any) => {
 	const token = req.headers?.token;
 	const user = await getUserByToken(token);
-	req.user = user;
+	if (user && Object.keys(user).length > 0) {
+		req.user = user;
+	}
 	next();
 }

@@ -59,7 +59,7 @@ export const register = (app: any) => {
     if (dbexec !== 0) {
       res.status(404).send('error'); // fix codes to return based on db errs
     } else {
-      res.status(200).send(`Success inserting ${user}`);
+      res.status(200).send(`Success inserting ${user} save this token: ${token}`);
     }
   });
 
@@ -67,12 +67,18 @@ export const register = (app: any) => {
     const user = req.user;
     const clusterName = req.body.cluster;
     const provider = req.body.provider;
+    if (!user) {
+      res.status(404).send('user does not exitst');
+      return;
+    }
+
     if (!clusterName || !provider || !user) {
       console.error('cluster || provider || user -> not exists')
       res.status(404).send('cluster || provider || user -> not exists')
       return;
     }
     const guid = crypto.randomUUID();
+
     const clusters = await dbutils.getClusterByUserId(user.id);
     const clusterExists = clusters.some((cluster: any) => cluster.name === clusterName);
 

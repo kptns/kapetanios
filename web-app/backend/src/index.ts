@@ -1,5 +1,6 @@
 import express from 'express';
-import * as db from './database/database'
+import * as db from './database/database';
+import * as agent from './agent/agent';
 
 // Create a new Express application instance
 const app = express();
@@ -13,6 +14,7 @@ app.use((req, res, next) => {
   next();
 });
 db.register(app);
+agent.register(app);
 
 // Define a simple root route
 app.get('/', (req, res) => {

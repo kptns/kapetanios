@@ -13,8 +13,8 @@ const DBNotPresent = -1;
 const DBUsersTables = 1;
 const DBClustersTables = 2;
 const DBDeploymentsTables = 3;
-const DBuserclusterMapTables = 4;
-const maxDBVersion = DBuserclusterMapTables;  // this needs to be the version variable 
+const DBhpaTables = 4;
+const maxDBVersion = DBhpaTables;  // this needs to be the version variable 
 const dbLocalPath = config.get('KAPETANIOS_DATABASEPATH') || 'database/';
 const dbFullFilename = path.join(dbLocalPath, 'Kapetanios.db');
 
@@ -106,14 +106,16 @@ const initializeDeploymentsTable = (db: any, dbUpgradeNeeded: boolean, updateToV
           CREATE TABLE IF NOT EXISTS deployments (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               cluster_id INTEGER NOT NULL,
+              guid TEXT NOT NULL,
               name TEXT NOT NULL,
-              model TEXT NOT NULL,
-              enabled BOOLEAN NOT NULL,
-              min_replicas INTEGER NOT NULL,
-              max_replicas INTEGER NOT NULL,
-              hpa_available BOOLEAN NOT NULL,
-              hpa_name TEXT,
-              target_spec_name TEXT,
+              namespace INTEGER NOT NULL,
+              createdAt TEXT,
+              updatedAt TEXT,
+              status TEXT,
+              labels TEXT,
+              annotations TEXT,
+              yaml TEXT,
+              model TEXT,
               FOREIGN KEY (cluster_id) REFERENCES clusters(id)
           );`;
         /*const initTeamsTableTeamIdIndex = `
@@ -132,26 +134,32 @@ const initializeDeploymentsTable = (db: any, dbUpgradeNeeded: boolean, updateToV
   return 0;
 }
 
-const initializeuser_cluster_mapTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion: number) => {
+const initializehpaTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion: number) => {
   if (!dbUpgradeNeeded) {
     return 0;
   }
 
   switch (updateToVersion) {
-    case DBuserclusterMapTables: {
+    case DBhpaTables: {
       try {
-        const inituser_cluster_mapTable = `
-          CREATE TABLE IF NOT EXISTS user_cluster_map (
-            user_id INTEGER NOT NULL,
-            cluster_id INTEGER NOT NULL,
-            PRIMARY KEY (user_id, cluster_id),
-            FOREIGN KEY (user_id) REFERENCES users(id),
-            FOREIGN KEY (cluster_id) REFERENCES clusters(id)
+        const inithpaTable = `
+          CREATE TABLE IF NOT EXISTS hpa (
+            deployment_id INTEGER NOT NULL,
+            guid TEXT NOT NULL,
+              name TEXT NOT NULL,
+              namespace INTEGER NOT NULL,
+              createdAt TEXT,
+              updatedAt TEXT,
+              status TEXT,
+              minReplicas INTEGER,
+              maxReplicas INTEGER,
+              targetCPUUtilizationPercentage TEXT,
+              yaml TEXT
         );`;
         /*const initTeamsTableTeamIdIndex = `
           CREATE INDEX IF NOT EXISTS index_teamId_teams ON teams (teamId);`;*/
-        console.log('Going to create user_cluster_map table.');
-        db.exec(inituser_cluster_mapTable);
+        console.log('Going to create horizontal pod autoscaler table.');
+        db.exec(inithpaTable);
         //db.exec(initTeamsTableTeamIdIndex);
       } catch (err) {
         console.log('Failed to execute user_cluster_map, error: ' + err);
@@ -281,7 +289,7 @@ export const upgradeOrInitializeTables = async (db: any, dbUpgradeNeeded: boolea
         }*/
       }
 
-      dbInit = await initializeuser_cluster_mapTable(db, dbUpgradeNeeded, updatingToVersion);
+      dbInit = await initializehpaTable(db, dbUpgradeNeeded, updatingToVersion);
       if (dbInit != 0) {
         console.error('initializedeploymentsTable failed with ' + dbInit);
         dbInitFailed = true;
@@ -359,7 +367,7 @@ export const saveBackup = () => {
     // Remove these two lines:
     // db.close();
     // db = null;
-    console.log('Database saved');
+    //console.log('Database saved');
   } catch (err) {
     console.error('Failed to save and close the database:', err);
   }
@@ -367,22 +375,20 @@ export const saveBackup = () => {
 
 function transformDbData(data: any) {
   if (!Array.isArray(data) || data.length === 0 || !data[0].columns || !data[0].values) {
-    console.error("Input must be a non-empty array with 'columns' and 'values' properties.");
-    return null;
+    return [];
   }
 
   const columns = data[0].columns;
   const values = data[0].values[0];
 
-  const keyValuePairs = columns.map((column:string, index:number) => [column, values[index]]);
+  const keyValuePairs = columns.map((column: string, index: number) => [column, values[index]]);
 
   return Object.fromEntries(keyValuePairs);
 }
 
 function transformDbDatas(data: any) {
   if (!Array.isArray(data) || data.length === 0 || !data[0].columns || !data[0].values) {
-    console.error("Input must be a non-empty array with 'columns' and 'values' properties.");
-    return null;
+    return [];
   }
 
   const columns = data[0].columns;
@@ -429,6 +435,58 @@ export const execInsertCluster = async (clusterguid: string, name: string, provi
   return dbResult;
 }
 
+export const execInsertDeployment = async (clusterId: string, id: string, name: string, namespace: string, createdAt: string, updatedAt: string,
+  status: string, labels: string, annotations: string, yaml: string, model: string
+) => {
+  console.log('Inserting deployments: ', name, ' - for namespace: ', namespace, ' - in cluster: ', clusterId);
+  let dbResult = await executeInsertAsync(
+    'deployments',
+    'INSERT INTO deployments(cluster_id, guid, name, namespace, createdAt, updatedAt, status, labels, annotations, yaml, model) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [clusterId, id, name, namespace, createdAt, updatedAt, status, labels, annotations, yaml, model]
+  );
+
+  const queryResult = await db.exec(
+    'SELECT id FROM deployments WHERE cluster_id = ? AND name = ?',
+    [clusterId, name]
+  );
+  return queryResult[0].values[0][0]; // fix this to simplify expression
+}
+
+export const execInsertHpa = async (deploymentId: string, id: string, name: string, namespace: string, createdAt: string, updatedAt: string,
+  status: string, minReplicas: string, maxReplicas: string, targetCPUUtilizationPercentage: string, yaml: string
+) => {
+  console.log('Inserting hpa: ', name, ' - for namespace: ', namespace, ' - in deployment: ', deploymentId);
+  let dbResult = await executeInsertAsync(
+    'hpa',
+    'INSERT INTO hpa(deployment_id, guid, name, namespace, createdAt, updatedAt, status, minReplicas, maxReplicas, targetCPUUtilizationPercentage, yaml) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [deploymentId, id, name, namespace, createdAt, updatedAt, status, minReplicas, maxReplicas, targetCPUUtilizationPercentage, yaml]
+  );
+  return dbResult;
+}
+
+export const execUpdateDeployment = async (
+  clusterId: string,
+  guid: string,
+  namespace: string,
+  createdAt: string,
+  updatedAt: string,
+  status: string,
+  labels: string,
+  annotations: string,
+  yaml: string,
+  model: string
+) => {
+  console.log('Updating deployment with GUID:', guid, ' - in cluster:', clusterId);
+  let dbResult = await executeInsertAsync(
+    'deployments',
+    'UPDATE deployments SET namespace = ?, createdAt = ?, updatedAt = ?, status = ?, labels = ?, annotations = ?, yaml = ?, model = ? WHERE cluster_id = ? AND guid = ?',
+    [namespace, createdAt, updatedAt, status, labels, annotations, yaml, model, clusterId, guid]
+  );
+
+  console.log('Update result:', dbResult);
+  return dbResult;
+};
+
 export const getUserByToken = async (token: string) => {
   const user = await db.exec('SELECT * FROM users WHERE token == ?', [token]);
   const jsonUser = transformDbData(user);
@@ -439,6 +497,23 @@ export const getClusterByUserId = async (id: string) => {
   const clusters = await db.exec('SELECT * FROM clusters WHERE user == ?', [id]);
   const jsonClusters = transformDbDatas(clusters);
   return jsonClusters;
+}
+
+export const getClusterDeployments = async (deploymentsName: string[], clusterId: string) => {
+  const placeholders = deploymentsName.map(() => '?').join(', ');
+
+  const query = `
+      SELECT guid
+      FROM deployments
+      WHERE cluster_id = ? AND guid IN (${placeholders});
+    `;
+
+  const params = [clusterId, ...deploymentsName];
+  const foundDeployments = await db.exec(query, params);
+
+  if (foundDeployments?.length > 0) {
+    return foundDeployments[0].values[0];
+  } else { return [] };
 }
 
 export const getTable = async (table: string) => {
