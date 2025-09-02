@@ -118,11 +118,10 @@ const initializeDeploymentsTable = (db: any, dbUpgradeNeeded: boolean, updateToV
               model TEXT,
               FOREIGN KEY (cluster_id) REFERENCES clusters(id)
           );`;
-        /*const initTeamsTableTeamIdIndex = `
-          CREATE INDEX IF NOT EXISTS index_teamId_teams ON teams (teamId);`;*/
+        const initDeploymentsIndex = `CREATE INDEX IF NOT EXISTS idx_cluster_guid ON deployments (cluster_id, guid);`;
         console.log('Going to create deployments table.');
         db.exec(initDeploymentsTable);
-        //db.exec(initTeamsTableTeamIdIndex);
+        db.exec(initDeploymentsIndex);
       } catch (err) {
         console.log('Failed to execute initTeamsTable, error: ' + err);
         return -1;
@@ -146,15 +145,15 @@ const initializehpaTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion: 
           CREATE TABLE IF NOT EXISTS hpa (
             deployment_id INTEGER NOT NULL,
             guid TEXT NOT NULL,
-              name TEXT NOT NULL,
-              namespace INTEGER NOT NULL,
-              createdAt TEXT,
-              updatedAt TEXT,
-              status TEXT,
-              minReplicas INTEGER,
-              maxReplicas INTEGER,
-              targetCPUUtilizationPercentage TEXT,
-              yaml TEXT
+            name TEXT NOT NULL,
+            namespace TEXT,
+            createdAt TEXT,
+            updatedAt TEXT,
+            status TEXT,
+            minReplicas TEXT,
+            maxReplicas TEXT,
+            targetCPUUtilizationPercentage TEXT,
+            yaml TEXT
         );`;
         /*const initTeamsTableTeamIdIndex = `
           CREATE INDEX IF NOT EXISTS index_teamId_teams ON teams (teamId);`;*/
@@ -446,8 +445,8 @@ export const execInsertDeployment = async (clusterId: string, id: string, name: 
   );
 
   const queryResult = await db.exec(
-    'SELECT id FROM deployments WHERE cluster_id = ? AND name = ?',
-    [clusterId, name]
+    'SELECT id FROM deployments WHERE cluster_id = ? AND guid = ?',
+    [clusterId, id]
   );
   return queryResult[0].values[0][0]; // fix this to simplify expression
 }
@@ -467,6 +466,7 @@ export const execInsertHpa = async (deploymentId: string, id: string, name: stri
 export const execUpdateDeployment = async (
   clusterId: string,
   guid: string,
+  name: string,
   namespace: string,
   createdAt: string,
   updatedAt: string,
@@ -479,13 +479,31 @@ export const execUpdateDeployment = async (
   console.log('Updating deployment with GUID:', guid, ' - in cluster:', clusterId);
   let dbResult = await executeInsertAsync(
     'deployments',
-    'UPDATE deployments SET namespace = ?, createdAt = ?, updatedAt = ?, status = ?, labels = ?, annotations = ?, yaml = ?, model = ? WHERE cluster_id = ? AND guid = ?',
-    [namespace, createdAt, updatedAt, status, labels, annotations, yaml, model, clusterId, guid]
+    'UPDATE deployments SET name =?, namespace = ?, createdAt = ?, updatedAt = ?, status = ?, labels = ?, annotations = ?, yaml = ?, model = ? WHERE cluster_id = ? AND guid = ?',
+    [name, namespace, createdAt, updatedAt, status, labels, annotations, yaml, model, clusterId, guid]
   );
-
-  console.log('Update result:', dbResult);
   return dbResult;
 };
+
+export const execUpdateHPA = async (
+  deploymentId: string, guid: string, name: string, namespace: string, createdAt: string, updatedAt: string,
+  status: string, minReplicas: string, maxReplicas: string, targetCPUUtilizationPercentage: string, yaml: string
+) => {
+  console.log('Updating HPA with GUID:', guid, ' - in deployment:', deploymentId);
+  let dbResult = await executeInsertAsync(
+    'deployments',
+    'UPDATE hpa SET name =?, namespace = ?, createdAt = ?, updatedAt = ?, status = ?, minReplicas = ?, maxReplicas = ?, yaml = ?, targetCPUUtilizationPercentage = ? WHERE deployment_id = ? AND guid = ?',
+    [name, namespace, createdAt, updatedAt, status, minReplicas, maxReplicas, yaml, targetCPUUtilizationPercentage, deploymentId, guid]
+  );
+  return dbResult;
+};
+
+export const getdeploymentIDbyguids = async (clusterId: string, deploymentGuid: string) => {
+  const query = `SELECT * FROM deployments WHERE cluster_id = ? AND guid = ? ;`;
+  let data = db.exec(query, [clusterId, deploymentGuid]);
+  data = transformDbData(data);
+  return data.id ?? null;
+}
 
 export const getUserByToken = async (token: string) => {
   const user = await db.exec('SELECT * FROM users WHERE token == ?', [token]);

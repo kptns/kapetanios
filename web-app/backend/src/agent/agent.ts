@@ -27,11 +27,11 @@ export const register = (app: any) => {
 			const { hpa, ...deployment } = deploy;
 			try {
 				if (existingdeployments.includes(deployment.id)) {
-					if (deployment.update) {
-						console.log('updating deployment ', deployment.id);
+					if (deployment.update === "true") {
 						let resDB = await dbutils.execUpdateDeployment(
 							foundCluster.id,
 							deployment.id,
+							deployment.name,
 							deployment.namespace,
 							deployment.createdAt,
 							deployment.updatedAt,
@@ -41,6 +41,34 @@ export const register = (app: any) => {
 							deployment.yaml,
 							'model'
 						);
+						if (resDB != 0) {
+							console.log('ERROR updating deployment ');
+						} else {
+							console.log('success updating deployment ');
+						}
+
+					}
+					if (hpa.update === "true") {
+						const deploymentId = await dbutils.getdeploymentIDbyguids(foundCluster.id, deployment.id);
+						let resDB = await dbutils.execUpdateHPA(
+							deploymentId,
+							hpa.id,
+							hpa.name,
+							hpa.namespace,
+							hpa.createdAt,
+							hpa.updatedAt,
+							hpa.status,
+							hpa.minReplicas,
+							hpa.maxReplicas,
+							hpa.targetCPUUtilizationPercentage,
+							hpa.yaml
+						);
+						if (resDB != 0) {
+							console.log('ERROR updating hpa ');
+						} else {
+							console.log('success updating hpa ');
+						}
+
 					}
 				} else /*if( !existingdeployments.includes(deployment.name) )*/ {
 					let deploymentId = await dbutils.execInsertDeployment(foundCluster.id, deployment.id, deployment.name, deployment.namespace, deployment.createdAt, deployment.updatedAt,
@@ -49,18 +77,11 @@ export const register = (app: any) => {
 						hpa.status, hpa.minReplicas, hpa.maxReplicas, hpa.targetCPUUtilizationPercentage, hpa.yaml);
 				}
 			} catch (e) {
-				console.error('Error inserting deployments', e);
+				console.error('Error inserting deployments: ', e);
+				res.status(501).send('Error inserting deployments: ', e);
 			}
-			//console.log(deployment);
-			console.log('---')
-			//console.log(hpa)
 
 		}
-
-
-
-		console.log(existingdeployments)
-
 
 		res.status(201).send('deployment added correctly');
 
