@@ -360,6 +360,7 @@ export const saveBackup = () => {
 		return;
 	}
 	try {
+		// add date to the backup dbFullFilename-datetime.db? (now only for testing, demo)
 		const data = db.export();
 		const buffer = Buffer.from(data);
 		fs.writeFileSync(dbFullFilename, buffer);

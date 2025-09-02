@@ -1,28 +1,9 @@
 // @ts-decheck
-
-import * as config from '../utils/config';
-import fs from 'fs';
-import initSqlJs from 'sql.js';
 import { getDB, db } from './init';
-import * as path from 'path';
-
 // you can use the db directly in the folder like 
 //sqlite3 Kapetanios.db. -> .tables -> SELECT * FROM <table>;
 
-function transformDbData(data: any) {
-  if (!Array.isArray(data) || data.length === 0 || !data[0].columns || !data[0].values) {
-    return [];
-  }
-
-  const columns = data[0].columns;
-  const values = data[0].values[0];
-
-  const keyValuePairs = columns.map((column: string, index: number) => [column, values[index]]);
-
-  return Object.fromEntries(keyValuePairs);
-}
-
-function transformDbDatas(data: any) {
+function transformDbResult(data: any): object | object[] {
   if (!Array.isArray(data) || data.length === 0 || !data[0].columns || !data[0].values) {
     return [];
   }
@@ -34,10 +15,15 @@ function transformDbDatas(data: any) {
     return [];
   }
 
-  return values.map((rowValues: any[]) => {
-    const keyValuePairs = columns.map((column: string, index: number) => [column, rowValues[index]]);
-    return Object.fromEntries(keyValuePairs);
+  const result = values.map((rowValues: any[]) => {
+    const rowObject: { [key: string]: any } = {};
+    columns.forEach((colName: string, index: number) => {
+      rowObject[colName] = rowValues[index];
+    });
+    return rowObject;
   });
+
+  return result.length === 1 ? result[0] : result;
 }
 
 async function executeInsertAsync(tableName: string, query: string, data: string[]) {
@@ -138,20 +124,20 @@ export const execUpdateHPA = async (
 export const getdeploymentIDbyguids = async (clusterId: string, deploymentGuid: string) => {
   const query = `SELECT * FROM deployments WHERE cluster_id = ? AND guid = ? ;`;
   let data = db.exec(query, [clusterId, deploymentGuid]);
-  data = transformDbData(data);
+  data = transformDbResult(data);
   return data.id ?? null;
 }
 
 export const getUserByToken = async (token: string) => {
   const user = await db.exec('SELECT * FROM users WHERE token == ?', [token]);
-  const jsonUser = transformDbData(user);
+  const jsonUser = transformDbResult(user);
   return jsonUser;
 }
 
 export const getClusterByUserId = async (id: string) => {
   const clusters = await db.exec('SELECT * FROM clusters WHERE user == ?', [id]);
-  const jsonClusters = transformDbDatas(clusters);
-  return jsonClusters;
+  const jsonClusters = transformDbResult(clusters);
+  return [jsonClusters];
 }
 
 export const getClusterDeployments = async (deploymentsName: string[], clusterId: string) => {
