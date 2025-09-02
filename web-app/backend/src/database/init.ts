@@ -187,7 +187,7 @@ const initializeVersionTableAndCheckUpgrade = (db: any) => {
 		console.log('Going to ensure version table.');
 		db.exec(initVersionTable);
 	} catch (err) {
-		console.error('Failed to execute initVersionTable, error: ' + err);
+		console.log('ERROR: Failed to execute initVersionTable, error: ' + err);
 		return { result: -1, isDBUpgradeNeeded: null, updateFromVersion: null };
 	}
 	try {
@@ -195,7 +195,7 @@ const initializeVersionTableAndCheckUpgrade = (db: any) => {
 		const dbSelect = statement.get();
 		statement.free();
 		if (!dbSelect) {
-			console.error('Failed to get data from db - version.');
+			console.log('ERROR: Failed to get data from db - version.');
 			return { result: -2, isDBUpgradeNeeded: null, updateFromVersion: null };
 		}
 		if (dbSelect.maxVersion === null || dbSelect.maxVersion === undefined) {
@@ -208,11 +208,11 @@ const initializeVersionTableAndCheckUpgrade = (db: any) => {
 				isDBUpgradeNeeded = true;
 				updateFromVersion = dbSelect.maxVersion;
 			} else if (maxDBVersion < dbSelect.maxVersion) {
-				console.error('Server code db version ' + maxDBVersion + ' is smaller than database version ' + dbSelect.maxVersion);
+				console.log('ERROR: Server code db version ' + maxDBVersion + ' is smaller than database version ' + dbSelect.maxVersion);
 			}
 		}
 	} catch (err) {
-		console.error('Failed to get data from version table, error: ' + err);
+		console.log('ERROR: Failed to get data from version table, error: ' + err);
 		return { result: -2, isDBUpgradeNeeded: null, updateFromVersion: null };
 	}
 	return { result: 0, isDBUpgradeNeeded: isDBUpgradeNeeded, updateFromVersion: updateFromVersion };
@@ -242,7 +242,7 @@ const openDB = async (dbtype: string) => {
 		db = new SQL.Database(fileBuffer);
 		console.log('Existing database (' + dbFullFilename + ') opened.');
 	} catch (err) {
-		console.error('Failed to open existing database or it is not a valid SQLite file. Creating a new one.', err);
+		console.log('ERROR: Failed to open existing database or it is not a valid SQLite file. Creating a new one.', err);
 		db = new SQL.Database();
 		console.log('New in-memory database created.');
 	}
@@ -263,7 +263,7 @@ export const upgradeOrInitializeTables = async (db: any, dbUpgradeNeeded: boolea
 
 			dbInit = await initializeUsersTable(db, dbUpgradeNeeded, updatingToVersion);
 			if (dbInit != 0) {
-				console.error('initializeUsersTable failed with ' + dbInit);
+				console.log('ERROR: initializeUsersTable failed with ' + dbInit);
 				dbInitFailed = true;
 				/*if (allowDBRecreatedOnFailure) {
 					return -2;
@@ -272,7 +272,7 @@ export const upgradeOrInitializeTables = async (db: any, dbUpgradeNeeded: boolea
 
 			dbInit = await initializeClustersTable(db, dbUpgradeNeeded, updatingToVersion);
 			if (dbInit != 0) {
-				console.error('initializeclustersTable failed with ' + dbInit);
+				console.log('ERROR: initializeclustersTable failed with ' + dbInit);
 				dbInitFailed = true;
 				/*if (allowDBRecreatedOnFailure) {
 					return -2;
@@ -281,7 +281,7 @@ export const upgradeOrInitializeTables = async (db: any, dbUpgradeNeeded: boolea
 
 			dbInit = await initializeDeploymentsTable(db, dbUpgradeNeeded, updatingToVersion);
 			if (dbInit != 0) {
-				console.error('initializedeploymentsTable failed with ' + dbInit);
+				console.log('ERROR: initializedeploymentsTable failed with ' + dbInit);
 				dbInitFailed = true;
 				/*if (allowDBRecreatedOnFailure) {
 					return -2;
@@ -290,7 +290,7 @@ export const upgradeOrInitializeTables = async (db: any, dbUpgradeNeeded: boolea
 
 			dbInit = await initializehpaTable(db, dbUpgradeNeeded, updatingToVersion);
 			if (dbInit != 0) {
-				console.error('initializedeploymentsTable failed with ' + dbInit);
+				console.log('ERROR: initializedeploymentsTable failed with ' + dbInit);
 				dbInitFailed = true;
 				/*if (allowDBRecreatedOnFailure) {
 					return -2;
@@ -369,6 +369,6 @@ export const saveBackup = () => {
 		// db = null;
 		console.log('Database saved');
 	} catch (err) {
-		console.error('Failed to save and close the database:', err);
+		console.log('ERROR: Failed to save and close the database:', err);
 	}
 };

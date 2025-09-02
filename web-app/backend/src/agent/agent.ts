@@ -13,10 +13,13 @@ export const register = (app: any) => {
 			return;
 		}
 
+		console.log(`user ${user.user} inserting deployment-hpa with data: ${JSON.stringify(deployments).substring(0, 400)}`)
+
 		const clusters = await dbutils.getClustersByUserId(user.id);
-		const foundCluster = clusters.find((cluster: any) => cluster.name === clusterName);
+		const foundCluster: any = clusters.find((cluster: any) => cluster.name === clusterName);
 
 		if (!foundCluster) {
+			console.log('ERROR: Cluster not found, cannot add/update deployment')
 			res.status(404).send('Cluster not found, cannot add/update deployment');
 			return;
 		}
@@ -77,7 +80,7 @@ export const register = (app: any) => {
 						hpa.status, hpa.minReplicas, hpa.maxReplicas, hpa.targetCPUUtilizationPercentage, hpa.yaml);
 				}
 			} catch (e) {
-				console.error('Error inserting deployments: ', e);
+				console.log('ERROR: inserting deployments: ', e);
 				res.status(501).send('Error inserting deployments: ', e);
 			}
 

@@ -29,7 +29,7 @@ const yamlConfig = (rawconfig: string) => {
     config = yaml.load(rawconfig);
     enhanceConfigEnvs(config, '');
   } catch (e: any) {
-    console.error('Error loading config.yaml: ' + e.toString());
+    console.log('ERROR: Error loading config.yaml: ' + e.toString());
   }
 };
 

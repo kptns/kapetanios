@@ -35,7 +35,7 @@ async function executeInsertAsync(tableName: string, query: string, data: string
     await db.run(query, data);
     return 0;
   } catch (error: any) {
-    console.error('Insert failed with ' + error.message + ' for query ' + query + ' data: [' + data + ']');
+    console.log('ERROR: Insert failed with ' + error.message + ' for query ' + query + ' data: [' + data + ']');
     return error;
   }
 }
@@ -147,7 +147,7 @@ export const getUserByToken = async (token: string) => {
 export const getClustersByUserId = async (id: string) => {
   const clusters = await db.exec('SELECT * FROM clusters WHERE user == ?', [id]);
   const jsonClusters = transformDbResult(clusters);
-  return [jsonClusters];
+  return [jsonClusters].flat(Infinity);
 }
 
 export const getClustersDeployments = async (deploymentsName: string[], clusterId: string) => {
@@ -186,7 +186,7 @@ export const getTable = async (table: string) => {
       return [];
     }
   } catch (err: any) {
-    console.error(`Failed to get data from table '${table}':`, err.message);
+    console.error(`ERROR: failed to get data from table '${table}':`, err.message);
     return [];
   }
 };
@@ -203,7 +203,7 @@ export const listTables = () => {
     statement.free();
     return tables;
   } catch (err) {
-    console.error('Failed to list tables:', err);
+    console.log('ERROR: Failed to list tables:', err);
     return [];
   }
 };

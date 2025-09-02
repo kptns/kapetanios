@@ -25,7 +25,7 @@ const start = async function () {
 
     await initDB.initializeDatabase(dbType);
   } catch (e) {
-    console.error('ERROR -  Trying to intialize DB', e);
+    console.log('ERROR:  Trying to intialize DB', e);
   }
 };
 start();
@@ -81,7 +81,7 @@ export const register = (app: any) => {
     }
 
     if (!clusterName || !provider || !user) {
-      console.error('cluster || provider || user -> not exists')
+      console.log('ERROR: cluster || provider || user -> not exists')
       res.status(404).send('cluster || provider || user -> not exists')
       return;
     }
