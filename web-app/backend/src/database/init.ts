@@ -1,10 +1,10 @@
 // @ts-decheck
 
 import * as config from '../utils/config';
-import { transformDbResult } from './utils';
 import fs from 'fs';
 import initSqlJs from 'sql.js';
 import * as path from 'path';
+import { transformDbResult } from './utils';
 
 // you can use the db directly in the folder like 
 //sqlite3 Kapetanios.db. -> .tables -> SELECT * FROM <table>;

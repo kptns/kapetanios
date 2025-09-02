@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from 'fs';
-import * as yaml from 'js-yaml';
 import path from 'path';
+import * as yaml from 'js-yaml';
+import { existsSync, readFileSync } from 'fs';
 
 let rawconfig = '';
 let config: any;

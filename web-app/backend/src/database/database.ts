@@ -1,10 +1,10 @@
 //import { ensureDatabase } from "./initialize";
-import { userByToken } from '../auth/auth';
 import * as config from '../utils/config';
 import crypto from 'crypto';
 import * as dbutils from './utils';
 import * as initDB from './init';
 import { generateToken } from '../auth/auth';
+import { userByToken } from '../auth/auth';
 import packageJson from '../../package.json';
 
 

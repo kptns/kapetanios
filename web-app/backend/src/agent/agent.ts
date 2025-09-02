@@ -1,5 +1,5 @@
-import { userByToken } from "../auth/auth";
 import * as dbutils from "../database/utils";
+import { userByToken } from "../auth/auth";
 
 export const register = (app: any) => {
 	app.post('/api/agent/deployment', userByToken, async (req: any, res: any) => {

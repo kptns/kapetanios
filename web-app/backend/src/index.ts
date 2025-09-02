@@ -1,6 +1,7 @@
-import express from 'express';
-import * as db from './database/database';
+
 import * as agent from './agent/agent';
+import * as db from './database/database';
+import express from 'express';
 
 // Create a new Express application instance
 const app = express();
@@ -13,18 +14,9 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET, PUT, PATCH, POST, DELETE');
   next();
 });
-db.register(app);
+
 agent.register(app);
-
-// Define a simple root route
-app.get('/', (req, res) => {
-  res.send('Hello from your Bun + Express backend!');
-});
-
-// A simple API route
-app.get('/api/greeting', (req, res) => {
-  res.json({ message: 'Greetings from the API!' });
-});
+db.register(app);
 
 // Start the server
 app.listen(port, () => {
