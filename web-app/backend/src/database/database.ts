@@ -2,7 +2,8 @@
 import { userByToken } from '../auth/auth';
 import * as config from '../utils/config';
 import crypto from 'crypto';
-import * as dbutils from './utils'
+import * as dbutils from './utils';
+import * as initDB from './init';
 import { generateToken } from '../auth/auth';
 import packageJson from '../../package.json';
 
@@ -22,7 +23,7 @@ const start = async function () {
       // sdk process.env.alibabaKey. donwload keys ?
     }
 
-    await dbutils.initializeDatabase(dbType);
+    await initDB.initializeDatabase(dbType);
   } catch (e) {
     console.error('ERROR -  Trying to intialize DB', e);
   }
