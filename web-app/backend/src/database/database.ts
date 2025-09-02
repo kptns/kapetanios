@@ -56,6 +56,13 @@ export const register = (app: any) => {
     const guid = crypto.randomUUID();
     const token = generateToken(guid);
     const email = req.body.email;
+
+    const existingUser = await dbutils.getUser(user, email);
+    if(existingUser?.id ){
+      console.log(`User ${user} already exists with email ${email}`)
+      res.status(200).send(`User ${user} already exists with email ${email}`);
+      return;
+    }
     const dbexec = await dbutils.execInsertUser(user, guid, token, email);
     if (dbexec !== 0) {
       res.status(404).send('error'); // fix codes to return based on db errs
@@ -80,7 +87,7 @@ export const register = (app: any) => {
     }
     const guid = crypto.randomUUID();
 
-    const clusters = await dbutils.getClusterByUserId(user.id);
+    const clusters = await dbutils.getClustersByUserId(user.id);
     const clusterExists = clusters.some((cluster: any) => cluster.name === clusterName);
 
     if (clusterExists) {

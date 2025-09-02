@@ -23,6 +23,9 @@ function transformDbResult(data: any): object | object[] {
     return rowObject;
   });
 
+
+  // plural returns an array       getDeploys => [] 
+  // singular returns the json     getDeploy => {}
   return result.length === 1 ? result[0] : result;
 }
 
@@ -121,6 +124,13 @@ export const execUpdateHPA = async (
   return dbResult;
 };
 
+export const getUser = async (name: string, email: string) => {
+  const query = `SELECT * FROM users WHERE user = ? AND email = ? ;`;
+  let data = db.exec(query, [name, email]);
+  data = transformDbResult(data);
+  return data;
+}
+
 export const getdeploymentIDbyguids = async (clusterId: string, deploymentGuid: string) => {
   const query = `SELECT * FROM deployments WHERE cluster_id = ? AND guid = ? ;`;
   let data = db.exec(query, [clusterId, deploymentGuid]);
@@ -134,13 +144,13 @@ export const getUserByToken = async (token: string) => {
   return jsonUser;
 }
 
-export const getClusterByUserId = async (id: string) => {
+export const getClustersByUserId = async (id: string) => {
   const clusters = await db.exec('SELECT * FROM clusters WHERE user == ?', [id]);
   const jsonClusters = transformDbResult(clusters);
   return [jsonClusters];
 }
 
-export const getClusterDeployments = async (deploymentsName: string[], clusterId: string) => {
+export const getClustersDeployments = async (deploymentsName: string[], clusterId: string) => {
   const placeholders = deploymentsName.map(() => '?').join(', ');
 
   const query = `

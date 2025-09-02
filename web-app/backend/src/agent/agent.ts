@@ -13,7 +13,7 @@ export const register = (app: any) => {
 			return;
 		}
 
-		const clusters = await dbutils.getClusterByUserId(user.id);
+		const clusters = await dbutils.getClustersByUserId(user.id);
 		const foundCluster = clusters.find((cluster: any) => cluster.name === clusterName);
 
 		if (!foundCluster) {
@@ -22,7 +22,7 @@ export const register = (app: any) => {
 		}
 
 		const deploymentsName = deployments.map((deployment: { id: string }) => deployment.id);
-		const existingdeployments = await dbutils.getClusterDeployments(deploymentsName, foundCluster.id);
+		const existingdeployments = await dbutils.getClustersDeployments(deploymentsName, foundCluster.id);
 		for (const deploy of deployments) {
 			const { hpa, ...deployment } = deploy;
 			try {
