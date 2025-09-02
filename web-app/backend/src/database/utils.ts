@@ -3,7 +3,7 @@ import { getDB, db } from './init';
 // you can use the db directly in the folder like 
 //sqlite3 Kapetanios.db. -> .tables -> SELECT * FROM <table>;
 
-function transformDbResult(data: any): object | object[] {
+export function transformDbResult(data: any): object | object[] {
   if (!Array.isArray(data) || data.length === 0 || !data[0].columns || !data[0].values) {
     return [];
   }

@@ -1,6 +1,7 @@
 // @ts-decheck
 
 import * as config from '../utils/config';
+import { transformDbResult } from './utils';
 import fs from 'fs';
 import initSqlJs from 'sql.js';
 import * as path from 'path';
@@ -192,9 +193,8 @@ const initializeVersionTableAndCheckUpgrade = (db: any) => {
 		return { result: -1, isDBUpgradeNeeded: null, updateFromVersion: null };
 	}
 	try {
-		const statement = db.prepare(`SELECT MAX(id) AS maxVersion FROM version`);
-		const dbSelect = statement.get();
-		statement.free();
+		const resDB = db.exec(`SELECT MAX(id) AS maxVersion FROM version`);
+		const dbSelect: any = transformDbResult(resDB);
 		if (!dbSelect) {
 			console.log('ERROR: Failed to get data from db - version.');
 			return { result: -2, isDBUpgradeNeeded: null, updateFromVersion: null };
@@ -297,6 +297,8 @@ export const upgradeOrInitializeTables = async (db: any, dbUpgradeNeeded: boolea
 					return -2;
 				}*/
 			}
+
+			await updateDatabaseVersion(updatingToVersion);
 			updatingToVersion++;
 		}
 	} catch (e) {
@@ -304,6 +306,12 @@ export const upgradeOrInitializeTables = async (db: any, dbUpgradeNeeded: boolea
 	}
 }
 
+const updateDatabaseVersion = async (updatingToVersion: number) => {
+	const sql = `INSERT INTO version(id, availableSince) VALUES (?, ?);`;
+	const date = new Date().toISOString();
+	await db.run(sql, [updatingToVersion, date]);
+	console.log(`Successfully upgraded database to version ${updatingToVersion}.`);
+}
 
 export const initializeDatabase = async (dbtype: string) => {
 	ensureLocalPath();
@@ -312,14 +320,6 @@ export const initializeDatabase = async (dbtype: string) => {
 	const dbInitUpgrade = initializeVersionTableAndCheckUpgrade(db);
 	const isDBUpgradeNeeded = dbInitUpgrade.isDBUpgradeNeeded;
 	const updateFromVersion: any = dbInitUpgrade.updateFromVersion;
-
-
-	console.log('borororo')
-
-	console.log('borororo')
-
-	console.log('borororo')
-	console.log(dbInitUpgrade)
 	if (isDBUpgradeNeeded) {
 		console.log('DB update is needed. Upgrading from version ' + updateFromVersion + ' to ' + maxDBVersion);
 		//initializeUsersTable(db, isDBUpgradeNeeded, updateFromVersion);
