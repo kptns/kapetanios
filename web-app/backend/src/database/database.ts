@@ -58,12 +58,13 @@ export const register = (app: any) => {
     const email = req.body.email;
 
     const existingUser = await dbutils.getUser(user, email);
-    if(existingUser?.id ){
+    if (existingUser?.id) {
       console.log(`User ${user} already exists with email ${email}`)
       res.status(200).send(`User ${user} already exists with email ${email}`);
       return;
     }
-    const dbexec = await dbutils.execInsertUser(user, guid, token, email);
+    const admin = req.body?.pass === 'test1230' ? 'true' : 'false'; // simple admin function, need to improve
+    const dbexec = await dbutils.execInsertUser(user, guid, token, email, admin);
     if (dbexec !== 0) {
       res.status(404).send('error'); // fix codes to return based on db errs
     } else {
@@ -103,5 +104,14 @@ export const register = (app: any) => {
       res.status(404).send('cluster inserted correcty'); // need to handle right db errors
       return;
     }
+  });
+
+  app.get('/api/sql/show/table/:table', userByToken, async (req: any, res: any) => {
+    if (req.user.admin !== 'true') {
+      return res.status(403).send('Forbidden: Not authorized.');
+    }
+    const table = req.params.table;
+    const data = await dbutils.showTable(table);
+    res.status(200).send(data);
   });
 }

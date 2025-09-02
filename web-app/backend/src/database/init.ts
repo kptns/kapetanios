@@ -45,7 +45,8 @@ const initializeUsersTable = (db: any, dbUpgradeNeeded: boolean, updateToVersion
 							user TEXT NOT NULL,
 							guid TEXT UNIQUE NOT NULL,
 							token TEXT,
-							email TEXT NOT NULL
+							email TEXT NOT NULL,
+							admin TEXT
 					);`;
 				/*const initUsersTableIndex = `
 						CREATE INDEX IF NOT EXISTS index_userId_teams ON users (userId);`;*/
@@ -367,7 +368,7 @@ export const saveBackup = () => {
 		// Remove these two lines:
 		// db.close();
 		// db = null;
-		console.log('Database saved');
+		//console.log('Database saved');
 	} catch (err) {
 		console.log('ERROR: Failed to save and close the database:', err);
 	}

@@ -40,12 +40,12 @@ async function executeInsertAsync(tableName: string, query: string, data: string
   }
 }
 
-export const execInsertUser = async (user: string, guid: string, token: string, email: string) => {
+export const execInsertUser = async (user: string, guid: string, token: string, email: string, admin: string) => {
   console.log('Inserting user: ', user, ' - with email: ', email, ' - and guid: ', guid);
   let dbResult = await executeInsertAsync(
     'users',
-    'INSERT INTO users(user, guid, token, email) VALUES(?, ?, ?, ?)',
-    [user, guid, token, email]
+    'INSERT INTO users(user, guid, token, email, admin) VALUES(?, ?, ?, ?, ?)',
+    [user, guid, token, email, admin]
   );
   return dbResult;
 }
@@ -207,3 +207,11 @@ export const listTables = () => {
     return [];
   }
 };
+
+export const showTable = async (table: string) => {
+  const query = `SELECT * FROM ${table};`;
+  let data = db.exec(query);
+  data = transformDbResult(data);
+  console.table(data);
+  return data;
+}
